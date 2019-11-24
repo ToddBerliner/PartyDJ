@@ -1,0 +1,174 @@
+.App {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+.PlayerBg {
+  height: 45%;
+  background-size: cover;
+}
+.Player {
+  background-image: url(./fade.png);
+  background-repeat: repeat-x;
+  background-position: 0px bottom;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+}
+.playing-wrap {
+  text-align: center;
+}
+.playing-title {
+  font-size: 8vmin;
+}
+.playing-artist {
+  font-size: 4vmin;
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+.progress-wrap {
+    border: 2px solid #39CAE8;
+    background: #11303B;
+    height: 16px;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 95%;
+    margin-bottom: 30px;
+}
+
+.progress-bar {
+  background-color: #39CAE8;
+  height: 16px;
+}
+
+.QueueWrap {
+  height: 55%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.NextUp {
+  height: 105px;
+  width: 95%;
+}
+.section-wrap {
+  border-radius: 12px;
+  padding: 8px 15px;
+  height: 100%;
+}
+.section-header {
+  display: flex;
+  position: relative;
+}
+.section-title {
+  font-size: 6vmin;
+  font-weight: 900;
+}
+.section-callout {
+  position: absolute;
+  right: 0;
+  bottom: 2px;
+  color: #39CAE8;
+  font-weight: 600;
+  font-size: 4vmin;
+}
+.Queue {
+  flex: 2;
+  width: 95%;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.hidden {
+  display: none;
+}
+
+/** Buttons **/
+
+.btn {
+  background-color: transparent;
+  border-radius: 2em;
+  border: 0.2em solid #1ecd97;
+  color: #1ecd97;
+  cursor: pointer;
+  font-size: 3vmin;
+  padding: 0.7em 1.5em;
+  text-transform: uppercase;
+  transition: all 0.25s ease;
+}
+
+.btn:hover {
+  background: #1ecd97;
+  color: #333;
+}
+
+.btn--login {
+  margin: 0 auto;
+}
+
+.song-cell-wrap {
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
+  align-items: center;
+  height: 63px;
+}
+.bordered {
+  margin-top: -1px;
+  border-top: 1px solid #737373;
+  border-bottom: 1px solid #737373;
+}
+.song-art-cell {
+  width: 45px;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+}
+.bordered .song-art-cell {
+  width: 59px;
+}
+.song-art-img {
+  width: 45px;
+  height: 45px;
+  border-radius: 7px;
+  background-size: cover;
+  background-position: center center;
+}
+.song-details-cell {
+  flex: 1;
+  padding-left: 8px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+.song-details-wrap {
+  overflow: hidden;
+  white-space: nowrap;
+  width: 85%;
+  text-align: left;
+}
+.song-title {
+  font-size: 4vmin;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+.song-artist {
+  text-align: left;
+}
+
+.section-wrap {
+  background-color: #4a4a4a;
+}
