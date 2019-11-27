@@ -1,27 +1,15 @@
 import React, { Component } from 'react';
 import * as $ from "jquery";
-import Player from './Player.js';
-import {
-  authEndpoint,
-  clientId,
-  redirectUri,
-  scopes,
-  deviceId
-} from './config.js';
 import './App.css';
-
-const hash = window.location.hash
-  .substring(1)
-  .split("&")
-  .reduce(function (initial, item) {
-    if (item) {
-      var parts = item.split("=");
-      initial[parts[0]] = decodeURIComponent(parts[1]);
-    }
-    return initial;
-  }, {});
-
-window.location.hash = "";
+import Player from './Player.js';
+import Login from './Login.js';
+import { emptyItem } from './config.js';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Redirect
+} from "react-router-dom";
 
 class App extends Component {
 
@@ -36,15 +24,7 @@ class App extends Component {
       deviceId: null,
       playlist: [],
       songsAhead: 0,
-      item: {
-        album: {
-          images: [{ url: "" }],
-          name: ""
-        },
-        name: "",
-        artists: [{ name: "" }],
-        duration_ms: 0,
-      },
+      item: emptyItem,
       is_playing: "Paused",
       progress_ms: 124560
     }
@@ -52,24 +32,11 @@ class App extends Component {
     this.getStationState = this.getStationState.bind(this);
     this.getMasterStationState = this.getMasterStationState.bind(this);
     this.playAline = this.playAline.bind(this);
+    this.handleLogin = this.handleLogin.bind(this);
   }
 
   componentDidMount() {
 
-    // Check for master
-    if (hash.start) {
-      this.setState({ isMaster: true });
-    }
-
-    // Check for Spotify token
-    let _token = hash.access_token;
-    if (_token) {
-      this.setState({
-        token: _token,
-      }, () => { console.log(this.state) });
-      this.poller = setInterval(this.getCurrentlyPlaying, 1000);
-      this.poller2 = setInterval(this.getMemberStationState, 1000);
-    }
     if (this.state.token) {
       this.poller = setInterval(this.getCurrentlyPlaying, 1000);
       this.poller2 = setInterval(this.getMemberStationState, 1000);
@@ -136,7 +103,7 @@ class App extends Component {
       context_uri: "spotify:playlist:4HYvgc9ft7dr4uv9SYxVZE"
     }
     $.ajax({
-      url: "https://api.spotify.com/v1/me/player/play?device_id=" + deviceId,
+      url: "https://api.spotify.com/v1/me/player/play?device_id=" + this.state.deviceId,
       type: "PUT",
       data: JSON.stringify(aline),
       beforeSend: (xhr) => {
@@ -152,31 +119,39 @@ class App extends Component {
     });
   }
 
+  handleLogin(token, deviceId) {
+    this.setState({
+      token: token,
+      deviceId: deviceId,
+      isMaster: true
+    }, () => {
+      this.poller = setInterval(this.getCurrentlyPlaying, 1000)
+    });
+  }
+
   render() {
     return (
-      <div className="App">
-        {this.state.isMaster && (!this.state.token || !this.state.deviceId) && (
-          !this.state.token && (
-            <div className="LoginWrap">
-              <a
-                className="btn btn--loginApp-link"
-                href={`${authEndpoint}?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scopes.join("%20")}&response_type=token&show_dialog=true`}
-              >
-                Login to Spotify
-            </a>
-            </div>
-          )
-        )}
-        {((this.state.isMaster && this.state.token) || !this.state.is_master) && (
-          <Player
-            item={this.state.item}
-            progress_ms={this.state.progress_ms}
-            playlist={this.state.playlist}
-          />
-        )}
-      </div>
+      <Router>
+        <Switch>
+          <Route path="/login">
+            {this.state.token && this.state.deviceId
+              ? <Redirect to="/" />
+              : <Login handleLogin={this.handleLogin} />}
+          </Route>
+          <Route path="/">
+            <Player
+              item={this.state.item}
+              progress_ms={this.state.progress_ms}
+              playlist={this.state.playlist}
+            />
+          </Route>
+        </Switch>
+      </Router>
     );
   }
 }
+
+// /start -> setIsMaster, get token + device id -> go to /master
+// /member -> start polling
 
 export default App;

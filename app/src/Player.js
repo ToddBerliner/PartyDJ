@@ -18,7 +18,7 @@ const Player = props => {
 
     return (
         // Player UI
-        <>
+        <div className="App PlayerWrap">
             <div className="PlayerBg" style={playerBgStyles}>
                 <div className="Player">
                     <div className="playing-wrap">
@@ -61,7 +61,7 @@ const Player = props => {
                     </div>
                 </div>
             </div>
-        </>
+        </div>
     )
 }
 

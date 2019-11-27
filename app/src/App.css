@@ -2,14 +2,18 @@
   height: 100%;
   width: 100%;
   display: flex;
+}
+.Login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.PlayerWrap {
+  display: flex;
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
-}
-
-.PlayerBg {
-  height: 45%;
-  background-size: cover;
 }
 .Player {
   background-image: url(./fade.png);
@@ -20,6 +24,10 @@
   flex-direction: column;
   justify-content: flex-end;
   align-items: center;
+}
+.PlayerBg {
+  height: 45%;
+  background-size: cover;
 }
 .playing-wrap {
   text-align: center;
@@ -103,10 +111,8 @@
   border: 0.2em solid #1ecd97;
   color: #1ecd97;
   cursor: pointer;
-  font-size: 3vmin;
   padding: 0.7em 1.5em;
   text-transform: uppercase;
-  transition: all 0.25s ease;
 }
 
 .btn:hover {
@@ -116,6 +122,11 @@
 
 .btn--login {
   margin: 0 auto;
+}
+.device {
+  margin: 10px;
+  width: 75%;
+  cursor: pointer;
 }
 
 .song-cell-wrap {
