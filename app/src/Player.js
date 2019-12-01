@@ -19,7 +19,8 @@ const Player = props => {
     return (
         // Player UI
         <div className="App PlayerWrap">
-            <div className="PlayerBg" style={playerBgStyles}>
+            <div className="PlayerBg">
+                <div className="PlayerArt" style={playerBgStyles} />
                 <div className="Player">
                     <div className="playing-wrap">
                         <div className="playing-title">{props.item.name}</div>
