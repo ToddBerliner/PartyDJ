@@ -30,43 +30,20 @@ class App extends Component {
     }
     this.getCurrentlyPlaying = this.getCurrentlyPlaying.bind(this);
     this.getStationState = this.getStationState.bind(this);
-    this.getMasterStationState = this.getMasterStationState.bind(this);
-    this.playAline = this.playAline.bind(this);
     this.handleLogin = this.handleLogin.bind(this);
   }
 
   componentDidMount() {
-
-    if (this.state.token) {
-      this.poller = setInterval(this.getCurrentlyPlaying, 1000);
-      this.poller2 = setInterval(this.getMemberStationState, 1000);
-    }
-
     // Set API host based on whatever link was distrubted to members
     this.setState({ apiHost: window.location.host });
   }
 
   componentWillUnmount() {
     clearInterval(this.poller);
-    clearInterval(this.poller2);
   }
 
   getStationState() {
-    if (this.state.isMaster) {
-      this.getMasterStationState(this.state.userId, this.state.token);
-    } else {
-      this.getMemberStationState(this.state.userId);
-    }
-  }
-
-  getMemberStationState(userId) {
-    // if userId === null, station will generate userId and include it in response
-    console.log("getting Member Station state");
-  }
-
-  getMasterStationState(userId) {
-    // if userId === null, station will generate userId and include it in response
-    console.log("getting Master Station state");
+    // get station state from server
   }
 
   getCurrentlyPlaying() {
@@ -92,28 +69,9 @@ class App extends Component {
         if (xhr.status === 401) {
           this.setState({ token: null });
           clearInterval(this.poller);
-        }
-      }
-    });
-  }
+          this.setState({
 
-  playAline() {
-    // This gets moved to the server
-    const aline = {
-      context_uri: "spotify:playlist:4HYvgc9ft7dr4uv9SYxVZE"
-    }
-    $.ajax({
-      url: "https://api.spotify.com/v1/me/player/play?device_id=" + this.state.deviceId,
-      type: "PUT",
-      data: JSON.stringify(aline),
-      beforeSend: (xhr) => {
-        xhr.setRequestHeader("Authorization", "Bearer " + this.state.token);
-      },
-      statusCode: {
-        200: function () { console.log("200") },
-        204: function () { console.log(204) },
-        404: function (xhr, status, error) {
-          console.log(xhr, status, error);
+          })
         }
       }
     });
@@ -123,31 +81,44 @@ class App extends Component {
     this.setState({
       token: token,
       deviceId: deviceId,
-      isMaster: true
+      isMaster: true,
+      userId: 0
     }, () => {
-      this.poller = setInterval(this.getCurrentlyPlaying, 1000)
+      this.poller = setInterval(this.getCurrentlyPlaying, 1000);
     });
   }
 
   render() {
-    return (
-      <Router>
-        <Switch>
-          <Route path="/login">
-            {this.state.token && this.state.deviceId
-              ? <Redirect to="/" />
-              : <Login handleLogin={this.handleLogin} />}
-          </Route>
-          <Route path="/">
-            <Player
-              item={this.state.item}
-              progress_ms={this.state.progress_ms}
-              playlist={this.state.playlist}
-            />
-          </Route>
-        </Switch>
-      </Router>
-    );
+    const {
+      redirect,
+      token,
+      deviceId,
+      item,
+      progress_ms,
+      playlist
+    } = this.state;
+    if (redirect) {
+      return <Redirect to="/login" />
+    } else {
+      return (
+        <Router>
+          <Switch>
+            <Route path="/login">
+              {this.state.token && this.state.deviceId
+                ? <Redirect to="/" />
+                : <Login handleLogin={this.handleLogin} />}
+            </Route>
+            <Route path="/">
+              <Player
+                item={this.state.item}
+                progress_ms={this.state.progress_ms}
+                playlist={this.state.playlist}
+              />
+            </Route>
+          </Switch>
+        </Router>
+      );
+    }
   }
 }
 
