@@ -1,10 +1,14 @@
 import React from "react";
 import "./Player.css";
 import SongCell from "./SongCell.js";
+import { emptyTrack } from "./config";
 
 const Player = props => {
-    let duration = props.item.duration_ms;
-    let progress = props.progress_ms || 0;
+
+    const { track, progress_ms, songsAhead, playlist } = props;
+
+    let duration = track.duration_ms;
+    let progress = progress_ms || 0;
     if (duration === 0) {
         progress = 0;
         duration = 1;
@@ -13,7 +17,7 @@ const Player = props => {
         width: (progress * 100 / duration) + '%'
     }
     const playerBgStyles = {
-        backgroundImage: `url(${props.item.album.images[0].url})`
+        backgroundImage: `url(${track.artUrl})`
     }
 
     return (
@@ -23,8 +27,8 @@ const Player = props => {
                 <div className="PlayerArt" style={playerBgStyles} />
                 <div className="Player">
                     <div className="playing-wrap">
-                        <div className="playing-title">{props.item.name}</div>
-                        <div className="playing-artist">{props.item.artists[0].name}</div>
+                        <div className="playing-title">{track.name}</div>
+                        <div className="playing-artist">{track.artist}</div>
                     </div>
                     <div className="progress-wrap">
                         <div className="progress-bar" style={progressBarStyles} />
@@ -37,11 +41,15 @@ const Player = props => {
                         <div className="section-header">
                             <div className="section-title">Your Next Up</div>
                             <div className="section-callout">{props.songsAhead > 0
-                                ? `${props.songsAhead} songs ahead`
+                                ? `${songsAhead} songs ahead`
                                 : ""
                             }</div>
                         </div>
-                        <SongCell item={props.playlist[0]} bordered={false} />
+                        <SongCell track={
+                            playlist.length > 0
+                                ? playlist[0]
+                                : emptyTrack
+                        } bordered={false} />
                     </div>
                 </div>
                 <div className="Queue">
@@ -50,10 +58,10 @@ const Player = props => {
                             <div className="section-title">Your Queue</div>
                             <div className="section-callout">Add</div>
                         </div>
-                        {props.playlist.map((item, index) => {
+                        {playlist.map((track, index) => {
                             if (index > 0) {
                                 return (
-                                    <SongCell key={index} item={item} bordered={false} />
+                                    <SongCell key={index} track={track} bordered={false} />
                                 );
                             } else {
                                 return null;

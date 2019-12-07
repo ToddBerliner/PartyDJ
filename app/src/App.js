@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import * as $ from "jquery";
+import socketIOClient from 'socket.io-client';
 import './App.css';
 import Player from './Player.js';
 import Login from './Login.js';
-import { emptyItem } from './config.js';
+import { emptyTrack } from './config.js';
 import {
   BrowserRouter as Router,
   Switch,
@@ -15,76 +15,57 @@ class App extends Component {
 
   constructor() {
     super();
+    this.socket = null;
     this.state = {
-      apiHost: null,
+      apiHost: window.location.host,
+      endpoint: 'http://10.0.0.81:4001',
       userId: null,
       isMaster: false,
       activeMemberCount: 0,
       token: null,
       deviceId: null,
-      playlist: [],
+      playlist: [emptyTrack],
       songsAhead: 0,
-      item: emptyItem,
-      is_playing: "Paused",
-      progress_ms: 124560
+      track: emptyTrack,
+      is_playing: false,
+      progress_ms: 0
     }
-    this.getCurrentlyPlaying = this.getCurrentlyPlaying.bind(this);
-    this.getStationState = this.getStationState.bind(this);
     this.handleLogin = this.handleLogin.bind(this);
+    this.handleStationState = this.handleStationState.bind(this);
   }
 
   componentDidMount() {
-    // Set API host based on whatever link was distrubted to members
-    this.setState({ apiHost: window.location.host });
+    const { endpoint } = this.state;
+    this.socket = socketIOClient(endpoint);
+    this.socket.on("station state",
+      stationState => this.handleStationState(stationState));
   }
 
   componentWillUnmount() {
-    clearInterval(this.poller);
+    // Un-socket the socket!
   }
 
-  getStationState() {
-    // get station state from server
-  }
-
-  getCurrentlyPlaying() {
-    // Make a call using the token
-    // This gets moved to the server
-    $.ajax({
-      url: "https://api.spotify.com/v1/me/player",
-      type: "GET",
-      beforeSend: (xhr) => {
-        xhr.setRequestHeader("Authorization", "Bearer " + this.state.token);
-      },
-      success: function (data) {
-        if (data) {
-          this.setState({
-            item: data.item,
-            is_playing: data.is_playing,
-            progress_ms: data.progress_ms,
-          });
-        }
-      },
-      context: this,
-      error: function (xhr, status, error) {
-        if (xhr.status === 401) {
-          this.setState({ token: null });
-          clearInterval(this.poller);
-          this.setState({
-
-          })
-        }
-      }
+  handleStationState(stationState) {
+    console.log('got station state');
+    const { is_playing, progress_ms, track } = stationState;
+    this.setState({
+      is_playing: is_playing || false,
+      progress_ms: progress_ms || 0,
+      track: track || emptyTrack
     });
+    console.log(this.state.is_playing, this.state.progress_ms, this.state.track.duration_ms);
   }
 
   handleLogin(token, deviceId) {
     this.setState({
       token: token,
       deviceId: deviceId,
-      isMaster: true,
-      userId: 0
+      isMaster: true
     }, () => {
-      this.poller = setInterval(this.getCurrentlyPlaying, 1000);
+      this.socket.emit("spotify login", {
+        token: this.state.token,
+        deviceId: this.state.deviceId
+      });
     });
   }
 
@@ -93,7 +74,7 @@ class App extends Component {
       redirect,
       token,
       deviceId,
-      item,
+      track,
       progress_ms,
       playlist
     } = this.state;
@@ -104,15 +85,15 @@ class App extends Component {
         <Router>
           <Switch>
             <Route path="/login">
-              {this.state.token && this.state.deviceId
+              {token && deviceId
                 ? <Redirect to="/" />
                 : <Login handleLogin={this.handleLogin} />}
             </Route>
             <Route path="/">
               <Player
-                item={this.state.item}
-                progress_ms={this.state.progress_ms}
-                playlist={this.state.playlist}
+                track={track}
+                progress_ms={progress_ms}
+                playlist={playlist}
               />
             </Route>
           </Switch>

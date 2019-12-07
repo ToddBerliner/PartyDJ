@@ -2,21 +2,13 @@ import React from "react";
 
 const SongCell = props => {
 
-    const item = props.item || {
-        album: {
-            images: [{ url: "" }],
-            name: ""
-        },
-        name: "",
-        artists: [{ name: "" }],
-        duration_ms: 0,
-    };
+    const { artUrl, name, artist } = props.track;
+    const { bordered } = props.bordered ? 'bordered' : '';
 
     const backgroundStyles = {
-        backgroundImage: `url(${item.album.images[0].url})`,
+        backgroundImage: `url(${artUrl})`,
     }
 
-    const bordered = props.bordered ? 'bordered' : '';
     return (
         <div className={`song-cell-wrap ${bordered}`}>
             <div className="song-art-cell">
@@ -24,8 +16,8 @@ const SongCell = props => {
             </div>
             <div className="song-details-cell">
                 <div className="song-details-wrap">
-                    <div className="song-title">{item.name}</div>
-                    <div className="song-artist">{item.artists[0].name}</div>
+                    <div className="song-title">{name}</div>
+                    <div className="song-artist">{artist}</div>
                 </div>
             </div>
         </div >

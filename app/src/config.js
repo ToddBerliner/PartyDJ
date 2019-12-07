@@ -12,13 +12,20 @@ export const scopes = [
     "user-library-read",
     "user-top-read"
 ];
-export const deviceId = "de3815c44805edf38db1b732b806e182471712d1";
-export const emptyItem = {
-    album: {
-        images: [{ url: "" }],
-        name: ""
-    },
+
+export const emptyTrack = {
+    id: "",
+    artUrl: "",
     name: "",
-    artists: [{ name: "" }],
-    duration_ms: 0,
+    albumName: "",
+    artist: "",
+    duration_ms: 0
 };
+export const track = {
+    id: "6g2f9QpC5Q10MLs9hRCoQ9",
+    artUrl: "https://i.scdn.co/image/ab67616d0000b273414b87a6254c0d6e2943d928",
+    name: "In The Middle - Miktek Remix",
+    albumName: "Star Walk (Remastered 2019)",
+    artist: "AstroPilot",
+    duration_ms: 567000
+}
