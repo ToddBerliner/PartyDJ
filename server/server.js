@@ -56,13 +56,20 @@ let heartbeat = null;
 */
 
 // Spotify handlers
-const handleGetCurrentlyPlaying = function (response) {
+const handleGetCurrentlyPlaying = response => {
     // authenticated and have player data
     if (response.status === 200 && response.data !== '') {
         state.is_playing = response.data.is_playing || false;
         state.progress_ms = response.data.progress_ms || 0;
         state.track = spotify.extractTrack(response.data);
     }
+}
+
+// Station handlers
+const handleAddSong = trackData => {
+    console.log(trackData);
+    state.playlist.push(trackData);
+    console.log(state.playlist);
 }
 
 // on connection method
@@ -93,6 +100,11 @@ io.on("connection", socket => {
         console.log(`token set: ${spotifyAuth.token}`);
         // start playlist
         spotify.playPlaylist(spotifyAuth.token, spotifyAuth.deviceId);
+    });
+
+    // Handle queue add
+    socket.on("add song", data => {
+        handleAddSong(data);
     });
 
     // Handle disconnect

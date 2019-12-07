@@ -5,7 +5,7 @@ import { emptyTrack } from "./config";
 
 const Player = props => {
 
-    const { track, progress_ms, songsAhead, playlist } = props;
+    const { track, progress_ms, songsAhead, playlist, onQueueAdd } = props;
 
     let duration = track.duration_ms;
     let progress = progress_ms || 0;
@@ -56,7 +56,9 @@ const Player = props => {
                     <div className="section-wrap">
                         <div className="section-header">
                             <div className="section-title">Your Queue</div>
-                            <div className="section-callout">Add</div>
+                            <button
+                                className="section-callout"
+                                onClick={onQueueAdd}>Add</button>
                         </div>
                         {playlist.map((track, index) => {
                             if (index > 0) {

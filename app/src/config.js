@@ -14,7 +14,7 @@ export const scopes = [
 ];
 
 export const emptyTrack = {
-    id: "",
+    uri: "",
     artUrl: "",
     name: "",
     albumName: "",
@@ -22,7 +22,7 @@ export const emptyTrack = {
     duration_ms: 0
 };
 export const track = {
-    id: "6g2f9QpC5Q10MLs9hRCoQ9",
+    uri: "spotify:track:6g2f9QpC5Q10MLs9hRCoQ9",
     artUrl: "https://i.scdn.co/image/ab67616d0000b273414b87a6254c0d6e2943d928",
     name: "In The Middle - Miktek Remix",
     albumName: "Star Walk (Remastered 2019)",

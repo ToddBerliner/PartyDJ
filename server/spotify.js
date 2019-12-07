@@ -9,7 +9,7 @@ module.exports.extractTrack = playerData => {
     } catch (err) { }
 
     return {
-        id: track.id,
+        uri: track.uri,
         artUrl: artUrl,
         name: track.name,
         albumName: track.album.name,
