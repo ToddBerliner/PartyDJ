@@ -18,7 +18,7 @@ module.exports.extractTrack = playerData => {
     }
 }
 
-module.exports.playPlaylist = (token, deviceId, handler) => {
+module.exports.playPlaylist = (token, deviceId) => {
     axios.put(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
         {
             "context_uri": "spotify:playlist:40A1SdohDLvoG4iitBuqns",
@@ -28,9 +28,6 @@ module.exports.playPlaylist = (token, deviceId, handler) => {
             "position_ms": 0
         }, {
             headers: { "Authorization": "Bearer " + token }
-        })
-        .then(response => {
-            handler(response);
         })
         .catch(err => { console.log(err) });
 }

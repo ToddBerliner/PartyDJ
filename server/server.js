@@ -61,7 +61,6 @@ const handleGetCurrentlyPlaying = function (response) {
         state.is_playing = response.data.is_playing || false;
         state.progress_ms = response.data.progress_ms || 0;
         state.track = spotify.extractTrack(response.data);
-        console.log(state);
     }
 }
 
@@ -88,7 +87,8 @@ io.on("connection", socket => {
         // set state so heartbeat picks up signal to poll spotify
         spotifyAuth.token = data.token;
         spotifyAuth.deviceId = data.deviceId;
-        console.log(`> set tokent: ${spotifyAuth.token}`);
+        // start playlist
+        spotify.playPlaylist(spotifyAuth.token, spotifyAuth.deviceId);
     });
 
     // Handle disconnect
