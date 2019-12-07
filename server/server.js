@@ -38,6 +38,7 @@ let heartbeat = null;
         -- add user
     login
         -- set tokens
+        -- start playlist
     heart beat
         -- check for tokens && connected clients, get playing data
         -- emit station state
@@ -47,12 +48,11 @@ let heartbeat = null;
     spotify handlers
         handleGetCurrentlyPlaying
             -- update state
-            -- play next track
-            -- remove tokens if 401
-            -- do nothing if 204 / no content
     station handlers
         addQueueSong
+            -- update playlist
         rateSong
+            -- potentially play next
 */
 
 // Spotify handlers
@@ -71,7 +71,6 @@ io.on("connection", socket => {
     console.log("client connected");
     state.activeMemberCount = io.engine.clientsCount;
     users[socket.id] = { trackUris: [] }
-    console.log(users);
 
     // Activate heartbeat
     if (!state.active) {
@@ -81,6 +80,7 @@ io.on("connection", socket => {
             if (spotifyAuth.token !== null) {
                 spotify.getCurrentlyPlaying(spotifyAuth.token, handleGetCurrentlyPlaying);
             }
+            console.log(`emitting state`);
             io.emit("station state", state);
         }, 1000);
     }
@@ -90,6 +90,7 @@ io.on("connection", socket => {
         // set state so heartbeat picks up signal to poll spotify
         spotifyAuth.token = data.token;
         spotifyAuth.deviceId = data.deviceId;
+        console.log(`token set: ${spotifyAuth.token}`);
         // start playlist
         spotify.playPlaylist(spotifyAuth.token, spotifyAuth.deviceId);
     });
@@ -99,10 +100,10 @@ io.on("connection", socket => {
         console.log("client disconnected");
         state.activeMemberCount = io.engine.clientsCount;
         delete (users[socket.id]);
-        console.log(users);
         if (state.activeMemberCount === 0) {
             console.log("clearing hearbeat");
             clearInterval(heartbeat);
+            state.active = false;
         }
     });
 });
