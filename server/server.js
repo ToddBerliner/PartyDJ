@@ -31,6 +31,7 @@ let spotifyAuth = {
     token: null,
     deviceId: null
 }
+let heartbeat = null;
 
 /*
     connect
@@ -69,11 +70,13 @@ io.on("connection", socket => {
 
     console.log("client connected");
     state.activeMemberCount = io.engine.clientsCount;
+    users[socket.id] = { trackUris: [] }
+    console.log(users);
 
     // Activate heartbeat
     if (!state.active) {
         state.active = true;
-        setInterval(() => {
+        heartbeat = setInterval(() => {
             // check for connected users and tokens
             if (spotifyAuth.token !== null) {
                 spotify.getCurrentlyPlaying(spotifyAuth.token, handleGetCurrentlyPlaying);
@@ -95,6 +98,12 @@ io.on("connection", socket => {
     socket.on("disconnect", () => {
         console.log("client disconnected");
         state.activeMemberCount = io.engine.clientsCount;
+        delete (users[socket.id]);
+        console.log(users);
+        if (state.activeMemberCount === 0) {
+            console.log("clearing hearbeat");
+            clearInterval(heartbeat);
+        }
     });
 });
 

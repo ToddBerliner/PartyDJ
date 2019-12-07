@@ -37,6 +37,9 @@ class App extends Component {
   componentDidMount() {
     const { endpoint } = this.state;
     this.socket = socketIOClient(endpoint);
+    this.socket.on("connect", () => {
+      this.setState({ userId: this.socket.id });
+    });
     this.socket.on("station state",
       stationState => this.handleStationState(stationState));
   }
