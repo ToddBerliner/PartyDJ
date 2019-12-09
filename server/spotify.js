@@ -1,11 +1,15 @@
+'use strict';
+
 const axios = require("axios");
 
 module.exports.extractTrack = playerData => {
 
     const track = playerData.item;
     let artUrl = "";
+    let artist = null;
     try {
         artUrl = track.album.images[0].url;
+        artist = track.artists[0].name;
     } catch (err) { }
 
     return {
@@ -13,7 +17,7 @@ module.exports.extractTrack = playerData => {
         artUrl: artUrl,
         name: track.name,
         albumName: track.album.name,
-        artist: track.artists[0].name,
+        artist: artist,
         duration_ms: track.duration_ms
     }
 }

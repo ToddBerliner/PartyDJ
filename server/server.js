@@ -1,3 +1,5 @@
+'use strict';
+
 // requires
 const express = require("express");
 const http = require("http");
@@ -26,7 +28,20 @@ let state = {
     token: null,
     deviceId: null
 }
-let users = {};
+let users = {
+    'a': {
+        trackUris: [
+            "spotify:track:49yNhtVHCnmBomxm1kWssH", // sourcebook
+            "spotify:track:6HJH2v5BIqpKW34nsLV1O7" // queen
+        ]
+    },
+    'b': {
+        trackUris: [
+            "spotify:track:65nZn05blTG4LTSrrHWc3I", // murmuration
+            "spotify:track:2VD2AthBaeEDWBRhHm136i" // odysseus
+        ]
+    }
+};
 let spotifyAuth = {
     token: null,
     deviceId: null
@@ -66,10 +81,15 @@ const handleGetCurrentlyPlaying = response => {
 }
 
 // Station handlers
-const handleAddSong = trackData => {
-    console.log(trackData);
-    state.playlist.push(trackData);
-    console.log(state.playlist);
+const handleAddSong = (userId, trackData) => {
+
+    // Add to correct user
+    users[userId].trackUris.push(trackData.uri);
+
+    // Calculate station
+
+    // Update playlist in spotify
+
 }
 
 // on connection method
@@ -79,19 +99,6 @@ io.on("connection", socket => {
     state.activeMemberCount = io.engine.clientsCount;
     users[socket.id] = { trackUris: [] }
 
-    // Activate heartbeat
-    if (!state.active) {
-        state.active = true;
-        heartbeat = setInterval(() => {
-            // check for connected users and tokens
-            if (spotifyAuth.token !== null) {
-                spotify.getCurrentlyPlaying(spotifyAuth.token, handleGetCurrentlyPlaying);
-            }
-            console.log(`emitting state`);
-            io.emit("station state", state);
-        }, 1000);
-    }
-
     // Handle login
     socket.on("spotify login", data => {
         // set state so heartbeat picks up signal to poll spotify
@@ -100,11 +107,27 @@ io.on("connection", socket => {
         console.log(`token set: ${spotifyAuth.token}`);
         // start playlist
         spotify.playPlaylist(spotifyAuth.token, spotifyAuth.deviceId);
+        // start heartbeat
+        // TODO: move this when spotify is server authenticated instead of simple auth
+        heartbeat = setInterval(() => {
+            // check for connected users and tokens
+            if (spotifyAuth.token !== null) {
+                spotify.getCurrentlyPlaying(spotifyAuth.token, handleGetCurrentlyPlaying);
+                console.log(`emitting state`);
+                // TODO: change this emit to be socket specific
+                io.emit("station state", state);
+            }
+        }, 1000);
     });
 
     // Handle queue add
     socket.on("add song", data => {
-        handleAddSong(data);
+        console.log(socket.id);
+        handleAddSong(socket.id, data);
+    });
+
+    socket.on("remove song", (socket, index) => {
+        handleRemoveSong(socket.id, index);
     });
 
     // Handle disconnect

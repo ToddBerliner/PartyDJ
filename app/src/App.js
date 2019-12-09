@@ -18,7 +18,7 @@ class App extends Component {
     this.socket = null;
     this.state = {
       apiHost: window.location.host,
-      endpoint: 'http://10.0.0.81:4001',
+      endpoint: 'http://localhost:4001',
       userId: null,
       isMaster: false,
       activeMemberCount: 0,
@@ -96,8 +96,21 @@ class App extends Component {
   }
 
   handleQueueAdd() {
-    // select a song
+    /*
+      THe Next Up/Queue UI is powered by the local state. Only the "Now Playing" and
+      "Songs Before" come from the server.
+    */
+    if (this.state.playlist.length < 5) {
+      this.setState(state => {
+        return {
+          playlist: [...state.playlist, this.trackUris.shift()]
+        }
+      });
+    }
+
+    // Send to server
     this.socket.emit("add song", this.trackUris.shift());
+
   }
 
   handleLogin(token, deviceId) {
