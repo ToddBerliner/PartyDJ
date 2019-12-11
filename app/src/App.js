@@ -24,16 +24,16 @@ class App extends Component {
       activeMemberCount: 0,
       token: null,
       deviceId: null,
-      playlist: [emptyTrack],
+      playlist: [],
       songsAhead: 0,
-      track: emptyTrack,
+      track: null,
       is_playing: false,
       progress_ms: 0
     }
     this.handleLogin = this.handleLogin.bind(this);
     this.handleStationState = this.handleStationState.bind(this);
     this.handleQueueAdd = this.handleQueueAdd.bind(this);
-    this.trackUris = [
+    this.tracks = [
       {
         uri: "spotify:track:49yNhtVHCnmBomxm1kWssH",
         artUrl: "https://i.scdn.co/image/0f4787c1d7f9a100f5c7dac1a40fa6851904935d",
@@ -84,33 +84,28 @@ class App extends Component {
   }
 
   handleStationState(stationState) {
-    console.log('got station state');
+    console.log(`got station state: ${stationState.playlist.length}`);
     const { is_playing, progress_ms, track, playlist } = stationState;
     this.setState({
       is_playing: is_playing || false,
       progress_ms: progress_ms || 0,
-      track: track || emptyTrack,
-      playlist: playlist || [emptyTrack]
+      track: track || null,
+      playlist: playlist || []
     });
-    console.log(this.state.is_playing, this.state.progress_ms, this.state.track.duration_ms);
   }
 
   handleQueueAdd() {
-    /*
-      THe Next Up/Queue UI is powered by the local state. Only the "Now Playing" and
-      "Songs Before" come from the server.
-    */
-    if (this.state.playlist.length < 5) {
-      this.setState(state => {
-        return {
-          playlist: [...state.playlist, this.trackUris.shift()]
-        }
-      });
+    if (this.tracks.length > 0) {
+      // Update the local state
+      const trackToAdd = this.tracks.shift();
+      // this.setState(state => {
+      //   return {
+      //     playlist: [...state.playlist, trackToAdd]
+      //   }
+      // });
+      // Send to server
+      this.socket.emit("add song", trackToAdd);
     }
-
-    // Send to server
-    this.socket.emit("add song", this.trackUris.shift());
-
   }
 
   handleLogin(token, deviceId) {

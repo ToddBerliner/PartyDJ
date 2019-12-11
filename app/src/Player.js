@@ -5,7 +5,11 @@ import { emptyTrack } from "./config";
 
 const Player = props => {
 
-    const { track, progress_ms, songsAhead, playlist, onQueueAdd } = props;
+    const { progress_ms, songsAhead, playlist, onQueueAdd } = props;
+    let { track } = props;
+    if (track === null) {
+        track = emptyTrack;
+    }
 
     let duration = track.duration_ms;
     let progress = progress_ms || 0;
@@ -60,15 +64,19 @@ const Player = props => {
                                 className="section-callout"
                                 onClick={onQueueAdd}>Add</button>
                         </div>
-                        {playlist.map((track, index) => {
-                            if (index > 0) {
-                                return (
-                                    <SongCell key={index} track={track} bordered={false} />
-                                );
-                            } else {
-                                return null;
-                            }
-                        })}
+                        {
+                            playlist.length > 0
+                                ? playlist.map((track, index) => {
+                                    if (index > 0) {
+                                        return (
+                                            <SongCell key={index} track={track} bordered={false} />
+                                        );
+                                    } else {
+                                        return null;
+                                    }
+                                })
+                                : null
+                        }
                     </div>
                 </div>
             </div>

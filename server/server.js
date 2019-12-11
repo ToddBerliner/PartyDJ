@@ -5,6 +5,9 @@ const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
 const spotify = require("./spotify.js");
+const station = require("./station.js");
+
+const playlistData = require("./src/playlistData.js");
 
 // configure server
 const port = 4001;
@@ -28,47 +31,12 @@ let state = {
     token: null,
     deviceId: null
 }
-let users = {
-    'a': {
-        trackUris: [
-            "spotify:track:49yNhtVHCnmBomxm1kWssH", // sourcebook
-            "spotify:track:6HJH2v5BIqpKW34nsLV1O7" // queen
-        ]
-    },
-    'b': {
-        trackUris: [
-            "spotify:track:65nZn05blTG4LTSrrHWc3I", // murmuration
-            "spotify:track:2VD2AthBaeEDWBRhHm136i" // odysseus
-        ]
-    }
-};
+let users = {};
 let spotifyAuth = {
     token: null,
     deviceId: null
 }
 let heartbeat = null;
-
-/*
-    connect
-        -- add user
-    login
-        -- set tokens
-        -- start playlist
-    heart beat
-        -- check for tokens && connected clients, get playing data
-        -- emit station state
-    disconnect
-        -- remove user
-
-    spotify handlers
-        handleGetCurrentlyPlaying
-            -- update state
-    station handlers
-        addQueueSong
-            -- update playlist
-        rateSong
-            -- potentially play next
-*/
 
 // Spotify handlers
 const handleGetCurrentlyPlaying = response => {
@@ -81,23 +49,25 @@ const handleGetCurrentlyPlaying = response => {
 }
 
 // Station handlers
-const handleAddSong = (userId, trackData) => {
-
-    // Add to correct user
-    users[userId].trackUris.push(trackData.uri);
-
-    // Calculate station
-
-    // Update playlist in spotify
-
-}
 
 // on connection method
 io.on("connection", socket => {
 
     console.log("client connected");
+    // set active member count
     state.activeMemberCount = io.engine.clientsCount;
-    users[socket.id] = { trackUris: [] }
+    // initialize user
+    const userId = socket.id;
+    users[userId] = { playlist: [] }
+
+    console.log(userId);
+    console.log(users[userId]);
+
+    console.log(heartbeat);
+    heartbeat = setInterval(() => {
+        console.log(`emitting state for ${userId}`);
+        io.to(`${userId}`).emit("station state", station.getStationState(users[userId], state));
+    }, 2000);
 
     // Handle login
     socket.on("spotify login", data => {
@@ -105,27 +75,27 @@ io.on("connection", socket => {
         spotifyAuth.token = data.token;
         spotifyAuth.deviceId = data.deviceId;
         console.log(`token set: ${spotifyAuth.token}`);
-        // start playlist
-        spotify.playPlaylist(spotifyAuth.token, spotifyAuth.deviceId);
         // start heartbeat
         // TODO: move this when spotify is server authenticated instead of simple auth
         heartbeat = setInterval(() => {
             // check for connected users and tokens
             if (spotifyAuth.token !== null) {
                 spotify.getCurrentlyPlaying(spotifyAuth.token, handleGetCurrentlyPlaying);
-                console.log(`emitting state`);
-                // TODO: change this emit to be socket specific
-                io.emit("station state", state);
             }
+            console.log(`emitting state`);
+            io.emit("station state", station.getStationState(users[userId], state));
         }, 1000);
     });
 
     // Handle queue add
-    socket.on("add song", data => {
-        console.log(socket.id);
-        handleAddSong(socket.id, data);
+    socket.on("add song", track => {
+        // add track to user's playlist
+        users[userId].playlist.push(track);
+        console.log(`got track, new count: ${users[userId].playlist.length}`);
+        console.log(station.getStationState(users[userId], state));
     });
 
+    // Handle queue remove
     socket.on("remove song", (socket, index) => {
         handleRemoveSong(socket.id, index);
     });
@@ -134,7 +104,7 @@ io.on("connection", socket => {
     socket.on("disconnect", () => {
         console.log("client disconnected");
         state.activeMemberCount = io.engine.clientsCount;
-        delete (users[socket.id]);
+        delete (users[userId]);
         if (state.activeMemberCount === 0) {
             console.log("clearing hearbeat");
             clearInterval(heartbeat);
