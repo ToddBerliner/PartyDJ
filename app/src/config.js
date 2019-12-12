@@ -4,13 +4,14 @@ export const clientId = "5624ad43c59e452fa3878109bb0f7783";
 export const redirectUri = "http://localhost:3000/login";
 export const scopes = [
     "user-top-read",
+    "user-library-read",
     "user-read-currently-playing",
     "user-read-playback-state",
     "user-read-recently-played",
     "user-modify-playback-state",
     "playlist-read-private",
-    "user-library-read",
-    "user-top-read"
+    "playlist-modify-public",
+    "playlist-modify-private"
 ];
 
 export const emptyTrack = {

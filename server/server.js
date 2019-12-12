@@ -21,7 +21,7 @@ const io = socketIo(server);
 app.use(index);
 
 // Our station state - this should be moved to another file i think
-let state = {
+const state = {
     activeMemberCount: 0,
     playlist: [],
     track: null,
@@ -29,12 +29,15 @@ let state = {
     progress_ms: null,
     currentUserId: null
 }
-let users = {};
-let usersMap = [];
-let spotifyAuth = {
+const users = {};
+const intervals = {};
+const usersMap = [];
+const spotifyAuth = {
     token: null,
     deviceId: null,
-    userId: null
+    userId: null,
+    playlistId: "40A1SdohDLvoG4iitBuqns",
+    playlistUri: "spotify:playlist:40A1SdohDLvoG4iitBuqns"
 }
 
 // Spotify heartbeat
@@ -54,38 +57,35 @@ const updateUsersNext = () => {
     }
 }
 
+const handleNewTracks = () => {
+    // get new playlist
+    const _users = JSON.parse(JSON.stringify(users));
+    const trackUris = station.getPlaylist(_users);
+    // TODO: backfill if necessary
+    // update spotify playlist
+    spotify.updatePlaylist(spotifyAuth.token, spotifyAuth.playlistId, trackUris);
+}
+
 // Spotify handlers
 const handleGetCurrentlyPlaying = response => {
-
-    console.log(response.status);
-
-    // authenticated and have player data
+    // Update state if we get a good response
     if (response.status === 200 && response.data !== '') {
         state.is_playing = response.data.is_playing || false;
         state.progress_ms = response.data.progress_ms || 0;
-        state.track = (spotify.extractTrack(response.data))
-            ? spotify.extractTrack(response.data)
-            : null;
-
-        console.log(`${state.is_playing}: ${state.progress_ms} of ${state.track.duration_ms}`);
-
-        if (state.is_playing && state.progress_ms > state.track.duration_ms) {
-            console.log("Next!");
-            const nextTrack = station.getNextTrack(users, state);
-            console.log(nextTrack);
-            if (nextTrack) {
-                console.log(nextTrack.name);
+        if (response.data.item !== null) {
+            state.track = (spotify.extractTrack(response.data.item))
+                ? spotify.extractTrack(response.data.item)
+                : null;
+            if (state.track !== null) {
+                console.log(`Now playing: ${state.track.name}`);
+                // Remove the track from the user's playlist to update state
+                // The track is removed by trackUri so it will be removed
+                // from all users who queued the song.
+                station.removeTrack(users, state.track.uri);
             }
         }
     }
 }
-
-
-
-// TEMP start spotify
-
-
-// Station handlers
 
 // on connection method
 io.on("connection", socket => {
@@ -97,12 +97,13 @@ io.on("connection", socket => {
 
     // Initialize user
     const userId = socket.id;
-    users[userId] = { playlist: [], emitter: null }
+    users[userId] = { playlist: [] }
+    intervals[userId] = null;
     usersMap.push(userId);
     updateUsersNext();
 
     // Handle heartbeat
-    users[userId].emitter = setInterval(() => {
+    intervals[userId] = setInterval(() => {
         // console.log(`--> emit to: ${userId}`);
         io.to(`${userId}`).emit("station state", station.getStationState(users[userId], state));
     }, 1000);
@@ -114,12 +115,19 @@ io.on("connection", socket => {
         spotifyAuth.deviceId = data.deviceId;
         spotifyAuth.userId = userId;
         console.log(`token set: ${spotifyAuth.token} for user ${spotifyAuth.userId}`);
+        console.log(`clearing playlist ${spotifyAuth.playlistId}`);
+        spotify.updatePlaylist(spotifyAuth.token, spotifyAuth.playlistId);
+        setTimeout(() => {
+            console.log(`playling playlist`);
+            spotify.playPlaylist(spotifyAuth.token, spotifyAuth.deviceId, spotifyAuth.playlistUri);
+        }, 1000);
     });
 
     // Handle queue add
     socket.on("add song", track => {
         // add track to user's playlist
         users[userId].playlist.push(track);
+        handleNewTracks();
     });
 
     // Handle queue remove
@@ -133,7 +141,7 @@ io.on("connection", socket => {
         // Update member count
         state.activeMemberCount = io.engine.clientsCount;
         // Clear the user's interval and delete them
-        clearInterval(users[userId].emitter);
+        clearInterval(intervals[userId]);
         delete (users[userId]);
         usersMap.splice(usersMap.indexOf(userId), 1);
         // Update the users map

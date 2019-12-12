@@ -16,11 +16,6 @@ const spotify = require("./spotify.js");
     -- replace tracks in spotify
     getCurrentlyPlaying
     -- find track in users & delete it (will update user specific state)
-    
-    2nd step is to keep track of what's been played already
-    For playlist, only replace tracks that haven't been played yet?
-    Or just replace the whole thing - no history needed?
-    User station state = user.playlist with played tracks filtered out
 
 */
 
@@ -34,32 +29,33 @@ module.exports.getStationState = (user, state) => {
     return userSpecificState;
 }
 
-module.exports.getNextTrack = (users, state) => {
+module.exports.getPlaylist = (users) => {
+
+    const playlist = [];
 
     // Resursive function
-    const gnt = (nextUserId, users, state, empty = []) => {
-        // Fail safe return in case all users have disconnected
+    const gnt = (nextUserId, users, empty = []) => {
+
+        // Stop recursion when all tracks are added to the playlist
         if (empty.length === Object.keys(users).length) {
             return false;
         }
 
-        // see if userId has a track and return it
+        // See if userId has a track and return it
         if (users[nextUserId].playlist.length > 0) {
-            // Make this user the currentUserId since they're track
-            // is being returned as the next track
-            state.currentUserId = nextUserId;
-            let track = users[nextUserId].playlist.shift();
-            return track;
+            const track = users[nextUserId].playlist.shift();
+            playlist.push(track.uri);
         } else {
             // Mark this user empty if not already marked
             if (!empty.includes(nextUserId)) {
                 empty.push(nextUserId);
             }
-            // Move on to next user
-            nextUserId = users[nextUserId].next;
         }
 
-        return gnt(nextUserId, users, state, empty);
+        // Move on to next user
+        nextUserId = users[nextUserId].next;
+
+        return gnt(nextUserId, users, empty);
     }
 
     // If no users empty, return false
@@ -67,11 +63,18 @@ module.exports.getNextTrack = (users, state) => {
         return false;
     }
 
-    // Pick initial user and start recursion
-    const nextUserId = state.currentUserId === null
-        ? Object.keys(users)[0]
-        : users[state.currentUserId].next;
+    // Always start at the beginning
+    gnt(Object.keys(users)[0], users);
 
-    return gnt(nextUserId, users, state);
+    return playlist;
 
 }
+
+module.exports.removeTrack = (users, trackUri) => {
+    console.log(`trying to remove track ${trackUri}`);
+    for (let user in users) {
+        users[user].playlist = users[user].playlist.filter(track => {
+            return trackUri !== track.uri;
+        });
+    }
+};

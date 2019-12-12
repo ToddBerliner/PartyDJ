@@ -64,6 +64,22 @@ class App extends Component {
         albumName: "When The Silence Is Speaking",
         artist: "Koan",
         duration_ms: 554306
+      },
+      {
+        uri: "spotify:track:2uzA8NPdHuT9IB2xvuME8m",
+        artUrl: "https://i.scdn.co/image/ab67616d0000b273a043fb69d8fcf165becfd37a",
+        name: "The Bliss Of Now",
+        albumName: "Soul Surfers (Remastered 2019)",
+        artist: "AstroPilot",
+        duration_ms: 471579
+      },
+      {
+        uri: "spotify:track:5kB7rOEuGfEv2ZalHLhTad",
+        artUrl: "https://i.scdn.co/image/ab67616d0000b2737e4ed1ead055f2a1bb356fe9",
+        name: "Center of the Sun - Solarstone's Chilled Out Remix",
+        albumName: "Tears from the Moon / Center of the Sun (Remixes)",
+        artist: "Conjure One",
+        duration_ms: 598706
       }
     ];
   }
@@ -76,6 +92,12 @@ class App extends Component {
     });
     this.socket.on("station state",
       stationState => this.handleStationState(stationState));
+
+    if (window.location.hash === '#f') {
+      this.tracks = this.tracks.slice(0, 3);
+    } else {
+      this.tracks = this.tracks.slice(3);
+    }
   }
 
   componentWillUnmount() {
