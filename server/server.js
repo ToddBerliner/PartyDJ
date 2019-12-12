@@ -32,12 +32,17 @@ let state = {
 let users = {};
 let usersMap = [];
 let spotifyAuth = {
-    token: "BQDjBMbOFVwp5uggEZZhNdaRP1XD95BgzY313EzLcxu3VDgPO1PJT9ZOgZkCbieGHuFzhIDXrVN86QMAoSzPDsBumYTipsEiF4NQ8-DYlxWSp9GwOt1FkjZgWp8DRTdMnShVlzRa-Ue-KMqapc2g3lLrb1ietABck3PLMfCwrNhG2BzcCGIfGmhUicyVBF3iphNxvE8qzd39i0ZKAYtpKbGBm_4b94YX_GHsvUesF89iaMaUEqAvqsdh1xJJJpAYShC-mDOZsQ",
-    deviceId: "bcbab64f626b4a8a5ab39ea45e0603b9c83fae26",
+    token: null,
+    deviceId: null,
     userId: null
 }
-let clientHeartbeat = null;
-let spotifyHeartbeat = null;
+
+// Spotify heartbeat
+let spotifyHeartbeat = setInterval(() => {
+    if (spotifyAuth.token !== null && spotifyAuth.deviceId !== null) {
+        spotify.getCurrentlyPlaying(spotifyAuth.token, handleGetCurrentlyPlaying);
+    }
+}, 2000);
 
 const updateUsersNext = () => {
     for (const [index, userId] of usersMap.entries()) {
@@ -51,15 +56,23 @@ const updateUsersNext = () => {
 
 // Spotify handlers
 const handleGetCurrentlyPlaying = response => {
+
+    console.log(response.status);
+
     // authenticated and have player data
     if (response.status === 200 && response.data !== '') {
         state.is_playing = response.data.is_playing || false;
         state.progress_ms = response.data.progress_ms || 0;
-        state.track = spotify.extractTrack(response.data);
+        state.track = (spotify.extractTrack(response.data))
+            ? spotify.extractTrack(response.data)
+            : null;
 
-        console.log(`${state.track.name}: ${state.progress_ms} of ${state.track.duration_ms}`);
-        if (state.progress_ms > 5000) {
-            const nextTrack = station.getNextTrack(users, userMap, state);
+        console.log(`${state.is_playing}: ${state.progress_ms} of ${state.track.duration_ms}`);
+
+        if (state.is_playing && state.progress_ms > state.track.duration_ms) {
+            console.log("Next!");
+            const nextTrack = station.getNextTrack(users, state);
+            console.log(nextTrack);
             if (nextTrack) {
                 console.log(nextTrack.name);
             }
@@ -69,41 +82,30 @@ const handleGetCurrentlyPlaying = response => {
 
 
 
-// TEMP get next track check
-setInterval(() => {
-    let nextTrack = station.getNextTrack(users, state);
-    if (nextTrack) {
-        console.log(`>>> setting track ${nextTrack.name}`);
-        // Don't do this - the getCurrentlyPlaying takes care of it
+// TEMP start spotify
 
-        state.track = nextTrack;
-    }
-}, 2000);
 
 // Station handlers
 
 // on connection method
 io.on("connection", socket => {
 
-    console.log("client connected");
+    console.log(`Client connected: ${socket.id}`);
 
-    // set active member count
+    // Set active member count
     state.activeMemberCount = io.engine.clientsCount;
-    // initialize user
+
+    // Initialize user
     const userId = socket.id;
-    const tracks = [playlistData.playlist.shift()];
-    tracks.push(playlistData.playlist.shift());
-    users[userId] = { playlist: tracks }
+    users[userId] = { playlist: [], emitter: null }
     usersMap.push(userId);
     updateUsersNext();
 
     // Handle heartbeat
-    if (clientHeartbeat === null) {
-        clientHeartbeat = setInterval(() => {
-            // console.log('emit');
-            io.to(`${userId}`).emit("station state", station.getStationState(users[userId], state));
-        }, 1000);
-    }
+    users[userId].emitter = setInterval(() => {
+        // console.log(`--> emit to: ${userId}`);
+        io.to(`${userId}`).emit("station state", station.getStationState(users[userId], state));
+    }, 1000);
 
     // Handle login
     socket.on("spotify login", data => {
@@ -112,15 +114,6 @@ io.on("connection", socket => {
         spotifyAuth.deviceId = data.deviceId;
         spotifyAuth.userId = userId;
         console.log(`token set: ${spotifyAuth.token} for user ${spotifyAuth.userId}`);
-        // start spotifyHeartbeat
-        // TODO: move this when spotify is server authenticated instead of simple auth
-        spotifyHeartbeat = setInterval(() => {
-            // check for connected users and tokens
-            if (spotifyAuth.token !== null) {
-                // console.log(`~~~ spotify gcp ~~~`);
-                spotify.getCurrentlyPlaying(spotifyAuth.token, handleGetCurrentlyPlaying);
-            }
-        }, 1000);
     });
 
     // Handle queue add
@@ -136,17 +129,16 @@ io.on("connection", socket => {
 
     // Handle disconnect
     socket.on("disconnect", () => {
-        console.log("client disconnected");
-        // update member count
+        console.log(`Client disconnected: ${userId}`);
+        // Update member count
         state.activeMemberCount = io.engine.clientsCount;
-        // delete user and clear their interval
+        // Clear the user's interval and delete them
+        clearInterval(users[userId].emitter);
         delete (users[userId]);
         usersMap.splice(usersMap.indexOf(userId), 1);
-
-        console.log(usersMap);
-
-        clearInterval(clientHeartbeat);
-        // clear spotify heartbeat if this is the spotify user
+        // Update the users map
+        updateUsersNext();
+        // Clear spotify heartbeat if this is the spotify user
         if (userId === spotifyAuth.userId) {
             clearInterval(spotifyHeartbeat);
             state.track = null;

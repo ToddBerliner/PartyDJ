@@ -5,6 +5,12 @@ const axios = require("axios");
 module.exports.extractTrack = playerData => {
 
     const track = playerData.item;
+
+    if (track === null) {
+        console.log(playerData);
+        return false;
+    }
+
     let artUrl = "";
     let artist = null;
     try {
@@ -29,6 +35,17 @@ module.exports.playPlaylist = (token, deviceId) => {
             "offset": {
                 "position": 0
             },
+            "position_ms": 0
+        }, {
+            headers: { "Authorization": "Bearer " + token }
+        })
+        .catch(err => { console.log(err) });
+}
+
+module.exports.playTrack = (token, deviceId, trackUri) => {
+    axios.put(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
+        {
+            "uris": [trackUri],
             "position_ms": 0
         }, {
             headers: { "Authorization": "Bearer " + token }

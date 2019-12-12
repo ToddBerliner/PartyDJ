@@ -35,30 +35,27 @@ module.exports.getStationState = (user, state) => {
 }
 
 module.exports.getNextTrack = (users, state) => {
+
     // Resursive function
     const gnt = (nextUserId, users, state, empty = []) => {
-
-        console.log(`checking userId: ${nextUserId}`);
-
-        // break if all empty
+        // Fail safe return in case all users have disconnected
         if (empty.length === Object.keys(users).length) {
-            console.log("*** EMPTY ***");
             return false;
         }
 
         // see if userId has a track and return it
         if (users[nextUserId].playlist.length > 0) {
-            // update the current user
+            // Make this user the currentUserId since they're track
+            // is being returned as the next track
             state.currentUserId = nextUserId;
             let track = users[nextUserId].playlist.shift();
-            console.log(`~~~ Found Track, updated state.currentUserId: ${state.currentUserId}`);
             return track;
         } else {
+            // Mark this user empty if not already marked
             if (!empty.includes(nextUserId)) {
-                console.log(`adding to empty: ${nextUserId}`)
                 empty.push(nextUserId);
             }
-            // move on to next user
+            // Move on to next user
             nextUserId = users[nextUserId].next;
         }
 
@@ -67,11 +64,10 @@ module.exports.getNextTrack = (users, state) => {
 
     // If no users empty, return false
     if (Object.keys(users).length === 0) {
-        console.log(`*** NO USERS ***`);
         return false;
     }
 
-    // Pick initial user
+    // Pick initial user and start recursion
     const nextUserId = state.currentUserId === null
         ? Object.keys(users)[0]
         : users[state.currentUserId].next;

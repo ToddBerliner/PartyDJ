@@ -5,7 +5,7 @@ module.exports.playlist = [
         name: "The Bliss Of Now",
         albumName: "Soul Surfers (Remastered 2019)",
         artist: "AstroPilot",
-        duration_ms: 471579
+        duration_ms: 5000
     },
     {
         uri: "spotify:track:5kB7rOEuGfEv2ZalHLhTad",
@@ -13,7 +13,7 @@ module.exports.playlist = [
         name: "Center of the Sun - Solarstone's Chilled Out Remix",
         albumName: "Tears from the Moon / Center of the Sun (Remixes)",
         artist: "Conjure One",
-        duration_ms: 598706
+        duration_ms: 5000
     },
     {
         uri: "spotify:track:49yNhtVHCnmBomxm1kWssH",
@@ -21,7 +21,7 @@ module.exports.playlist = [
         name: "Sourcebook",
         albumName: "Undiscovered Stories",
         artist: "Solar Fields",
-        duration_ms: 944000
+        duration_ms: 5000
     },
     {
         uri: "spotify:track:65nZn05blTG4LTSrrHWc3I",
@@ -29,6 +29,6 @@ module.exports.playlist = [
         name: "Murmuration - Tripswitch Remix",
         albumName: "Murmuration",
         artist: "Audioglider",
-        duration_ms: 578359
+        duration_ms: 5000
     }
 ];
