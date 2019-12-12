@@ -8,20 +8,20 @@ const spotify = require("./spotify.js");
     - server.users[userId].playlist.push(track) // next emit(stationState) updates client
     - updateSystemTracks() // creates backfill
     
-    Playing the Station
-    -- spotify.getCurrentlyPlaying()
-    --- if (duration_ms === progress_ms) -> playNextSong() // TODO: develop w/ 500 for every song
-    -- station.getNexttrack()
-    --- starting with current playing user, loop users until we find next song
-    ---- update current playing user
-    ---- shift() song from users[userId].playlist to UI is updated
-    ---- if ! user song, return next system song
-    -- spotify.play(track)
+    Users holds user playlists as is
+    updatePlaylist
+    -- copy users
+    -- build playlist (destructive to users copy)
+    -- backfill if needed
+    -- replace tracks in spotify
+    getCurrentlyPlaying
+    -- find track in users & delete it (will update user specific state)
+    
+    2nd step is to keep track of what's been played already
+    For playlist, only replace tracks that haven't been played yet?
+    Or just replace the whole thing - no history needed?
+    User station state = user.playlist with played tracks filtered out
 
-    Validate above flow:
-    - ensure connected client displays up next/queue correctly
-    - set timeout for 3 seconds, playNextTrack() // shifts song from server.state.users.tracks
-    - ensure connected client reflects playlist change 
 */
 
 module.exports.getStationState = (user, state) => {
