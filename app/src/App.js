@@ -3,7 +3,6 @@ import socketIOClient from 'socket.io-client';
 import './App.css';
 import Player from './Player.js';
 import Login from './Login.js';
-import { emptyTrack } from './config.js';
 import {
   BrowserRouter as Router,
   Switch,

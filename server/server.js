@@ -22,21 +22,32 @@ app.use(index);
 
 // Our station state - this should be moved to another file i think
 let state = {
-    active: false,
     activeMemberCount: 0,
     playlist: [],
     track: null,
     is_playing: null,
     progress_ms: null,
-    token: null,
-    deviceId: null
+    currentUserId: null
 }
 let users = {};
+let usersMap = [];
 let spotifyAuth = {
-    token: null,
-    deviceId: null
+    token: "BQDjBMbOFVwp5uggEZZhNdaRP1XD95BgzY313EzLcxu3VDgPO1PJT9ZOgZkCbieGHuFzhIDXrVN86QMAoSzPDsBumYTipsEiF4NQ8-DYlxWSp9GwOt1FkjZgWp8DRTdMnShVlzRa-Ue-KMqapc2g3lLrb1ietABck3PLMfCwrNhG2BzcCGIfGmhUicyVBF3iphNxvE8qzd39i0ZKAYtpKbGBm_4b94YX_GHsvUesF89iaMaUEqAvqsdh1xJJJpAYShC-mDOZsQ",
+    deviceId: "bcbab64f626b4a8a5ab39ea45e0603b9c83fae26",
+    userId: null
 }
-let heartbeat = null;
+let clientHeartbeat = null;
+let spotifyHeartbeat = null;
+
+const updateUsersNext = () => {
+    for (const [index, userId] of usersMap.entries()) {
+        if (index === usersMap.length - 1) {
+            users[userId].next = usersMap[0];
+        } else {
+            users[userId].next = usersMap[index + 1];
+        }
+    }
+}
 
 // Spotify handlers
 const handleGetCurrentlyPlaying = response => {
@@ -45,8 +56,29 @@ const handleGetCurrentlyPlaying = response => {
         state.is_playing = response.data.is_playing || false;
         state.progress_ms = response.data.progress_ms || 0;
         state.track = spotify.extractTrack(response.data);
+
+        console.log(`${state.track.name}: ${state.progress_ms} of ${state.track.duration_ms}`);
+        if (state.progress_ms > 5000) {
+            const nextTrack = station.getNextTrack(users, userMap, state);
+            if (nextTrack) {
+                console.log(nextTrack.name);
+            }
+        }
     }
 }
+
+
+
+// TEMP get next track check
+setInterval(() => {
+    let nextTrack = station.getNextTrack(users, state);
+    if (nextTrack) {
+        console.log(`>>> setting track ${nextTrack.name}`);
+        // Don't do this - the getCurrentlyPlaying takes care of it
+
+        state.track = nextTrack;
+    }
+}, 2000);
 
 // Station handlers
 
@@ -54,36 +86,40 @@ const handleGetCurrentlyPlaying = response => {
 io.on("connection", socket => {
 
     console.log("client connected");
+
     // set active member count
     state.activeMemberCount = io.engine.clientsCount;
     // initialize user
     const userId = socket.id;
-    users[userId] = { playlist: [] }
+    const tracks = [playlistData.playlist.shift()];
+    tracks.push(playlistData.playlist.shift());
+    users[userId] = { playlist: tracks }
+    usersMap.push(userId);
+    updateUsersNext();
 
-    console.log(userId);
-    console.log(users[userId]);
-
-    console.log(heartbeat);
-    heartbeat = setInterval(() => {
-        console.log(`emitting state for ${userId}`);
-        io.to(`${userId}`).emit("station state", station.getStationState(users[userId], state));
-    }, 2000);
+    // Handle heartbeat
+    if (clientHeartbeat === null) {
+        clientHeartbeat = setInterval(() => {
+            // console.log('emit');
+            io.to(`${userId}`).emit("station state", station.getStationState(users[userId], state));
+        }, 1000);
+    }
 
     // Handle login
     socket.on("spotify login", data => {
         // set state so heartbeat picks up signal to poll spotify
         spotifyAuth.token = data.token;
         spotifyAuth.deviceId = data.deviceId;
-        console.log(`token set: ${spotifyAuth.token}`);
-        // start heartbeat
+        spotifyAuth.userId = userId;
+        console.log(`token set: ${spotifyAuth.token} for user ${spotifyAuth.userId}`);
+        // start spotifyHeartbeat
         // TODO: move this when spotify is server authenticated instead of simple auth
-        heartbeat = setInterval(() => {
+        spotifyHeartbeat = setInterval(() => {
             // check for connected users and tokens
             if (spotifyAuth.token !== null) {
+                // console.log(`~~~ spotify gcp ~~~`);
                 spotify.getCurrentlyPlaying(spotifyAuth.token, handleGetCurrentlyPlaying);
             }
-            console.log(`emitting state`);
-            io.emit("station state", station.getStationState(users[userId], state));
         }, 1000);
     });
 
@@ -91,8 +127,6 @@ io.on("connection", socket => {
     socket.on("add song", track => {
         // add track to user's playlist
         users[userId].playlist.push(track);
-        console.log(`got track, new count: ${users[userId].playlist.length}`);
-        console.log(station.getStationState(users[userId], state));
     });
 
     // Handle queue remove
@@ -103,12 +137,19 @@ io.on("connection", socket => {
     // Handle disconnect
     socket.on("disconnect", () => {
         console.log("client disconnected");
+        // update member count
         state.activeMemberCount = io.engine.clientsCount;
+        // delete user and clear their interval
         delete (users[userId]);
-        if (state.activeMemberCount === 0) {
-            console.log("clearing hearbeat");
-            clearInterval(heartbeat);
-            state.active = false;
+        usersMap.splice(usersMap.indexOf(userId), 1);
+
+        console.log(usersMap);
+
+        clearInterval(clientHeartbeat);
+        // clear spotify heartbeat if this is the spotify user
+        if (userId === spotifyAuth.userId) {
+            clearInterval(spotifyHeartbeat);
+            state.track = null;
         }
     });
 });
