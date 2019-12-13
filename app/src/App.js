@@ -107,8 +107,9 @@ class App extends Component {
   handleStationState(stationState) {
     console.log(`got station state:`);
     console.log(stationState);
-    const { is_playing, progress_ms, track, playlist } = stationState;
+    const { is_playing, progress_ms, track, playlist, activeMemberCount } = stationState;
     this.setState({
+      activeMemberCount,
       is_playing: is_playing || false,
       progress_ms: progress_ms || 0,
       track: track || null,
@@ -120,11 +121,6 @@ class App extends Component {
     if (this.tracks.length > 0) {
       // Update the local state
       const trackToAdd = this.tracks.shift();
-      // this.setState(state => {
-      //   return {
-      //     playlist: [...state.playlist, trackToAdd]
-      //   }
-      // });
       // Send to server
       this.socket.emit("add song", trackToAdd);
     }
@@ -150,7 +146,8 @@ class App extends Component {
       deviceId,
       track,
       progress_ms,
-      playlist
+      playlist,
+      activeMemberCount
     } = this.state;
     if (redirect) {
       return <Redirect to="/login" />
@@ -169,6 +166,7 @@ class App extends Component {
                 progress_ms={progress_ms}
                 playlist={playlist}
                 onQueueAdd={this.handleQueueAdd}
+                activeMemberCount={activeMemberCount}
               />
             </Route>
           </Switch>

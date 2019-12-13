@@ -5,7 +5,12 @@ import { emptyTrack } from "./config";
 
 const Player = props => {
 
-    const { progress_ms, songsAhead, playlist, onQueueAdd } = props;
+    const {
+        progress_ms,
+        songsAhead,
+        playlist,
+        onQueueAdd,
+        activeMemberCount } = props;
     let { track } = props;
     if (track === null) {
         track = emptyTrack;
@@ -77,6 +82,9 @@ const Player = props => {
                                 })
                                 : null
                         }
+                        <div class="queue-footer">
+                            {activeMemberCount} people online
+                        </div>
                     </div>
                 </div>
             </div>
