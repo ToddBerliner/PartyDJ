@@ -37,8 +37,14 @@ const spotifyAuth = {
     deviceId: null,
     userId: null,
     playlistId: "40A1SdohDLvoG4iitBuqns",
-    playlistUri: "spotify:playlist:40A1SdohDLvoG4iitBuqns"
+    playlistUri: "spotify:playlist:40A1SdohDLvoG4iitBuqns",
+    appToken: null
 }
+
+// LEFT OFF HERE - need to block remaining execution until we have app token
+
+// Get Spotify app token
+spotify.getAppToken(spotifyAuth);
 
 // Spotify heartbeat
 let spotifyHeartbeat = setInterval(() => {
@@ -47,6 +53,7 @@ let spotifyHeartbeat = setInterval(() => {
     }
 }, 2000);
 
+// App handlers
 const updateUsersNext = () => {
     for (const [index, userId] of usersMap.entries()) {
         if (index === usersMap.length - 1) {
@@ -56,7 +63,6 @@ const updateUsersNext = () => {
         }
     }
 }
-
 const handleNewTracks = () => {
     // get new playlist
     const _users = JSON.parse(JSON.stringify(users));
@@ -84,6 +90,18 @@ const handleGetCurrentlyPlaying = response => {
                 station.removeTrack(users, state.track.uri);
             }
         }
+    }
+}
+const handleSearchResults = (userId, response) => {
+    console.log(userId);
+    if (response.status === 200) {
+        console.log(response.data);
+    }
+}
+const handleAlbumTracks = (userId, response) => {
+    console.log(userId, response);
+    if (response.status === 200) {
+        console.log(response.data);
     }
 }
 
@@ -134,6 +152,15 @@ io.on("connection", socket => {
     socket.on("remove song", (socket, index) => {
         handleRemoveSong(socket.id, index);
     });
+
+    // Handle search
+    socket.on("search", (socket, search) => {
+
+    });
+
+    // Handle get artist albums
+
+    // Handle get album tracks
 
     // Handle disconnect
     socket.on("disconnect", () => {
