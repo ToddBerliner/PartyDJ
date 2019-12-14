@@ -9,7 +9,7 @@ const Player = props => {
         progress_ms,
         songsAhead,
         playlist,
-        onQueueAdd,
+        onClickAdd,
         activeMemberCount } = props;
     let { track } = props;
     if (track === null) {
@@ -54,11 +54,12 @@ const Player = props => {
                                 : ""
                             }</div>
                         </div>
-                        <SongCell track={
+                        {
                             playlist.length > 0
-                                ? playlist[0]
-                                : emptyTrack
-                        } bordered={false} />
+                                ? <SongCell
+                                    track={playlist[0]} />
+                                : null
+                        }
                     </div>
                 </div>
                 <div className="Queue">
@@ -67,7 +68,7 @@ const Player = props => {
                             <div className="section-title">Your Queue</div>
                             <button
                                 className="section-callout"
-                                onClick={onQueueAdd}>Add</button>
+                                onClick={onClickAdd}>Add</button>
                         </div>
                         {
                             playlist.length > 0
@@ -82,7 +83,7 @@ const Player = props => {
                                 })
                                 : null
                         }
-                        <div class="queue-footer">
+                        <div className="queue-footer">
                             {activeMemberCount} people online
                         </div>
                     </div>

@@ -3,6 +3,10 @@ import socketIOClient from 'socket.io-client';
 import './App.css';
 import Player from './Player.js';
 import Login from './Login.js';
+import Search from './Search.js';
+
+import tracks from './scratch/playlistData.js';
+
 import {
   BrowserRouter as Router,
   Switch,
@@ -25,13 +29,16 @@ class App extends Component {
       deviceId: null,
       playlist: [],
       songsAhead: 0,
-      track: null,
+      track: tracks[0],
       is_playing: false,
-      progress_ms: 0
+      progress_ms: 0,
+      isSearching: false
     }
     this.handleLogin = this.handleLogin.bind(this);
     this.handleStationState = this.handleStationState.bind(this);
-    this.handleQueueAdd = this.handleQueueAdd.bind(this);
+    this.handleClickAdd = this.handleClickAdd.bind(this);
+    this.handleAddToQueue = this.handleAddToQueue.bind(this);
+    this.closeSearch = this.closeSearch.bind(this);
     this.tracks = [
       {
         uri: "spotify:track:49yNhtVHCnmBomxm1kWssH",
@@ -117,13 +124,25 @@ class App extends Component {
     });
   }
 
-  handleQueueAdd() {
-    if (this.tracks.length > 0) {
-      // Update the local state
-      const trackToAdd = this.tracks.shift();
-      // Send to server
-      this.socket.emit("add song", trackToAdd);
-    }
+  closeSearch() {
+    this.setState(state => {
+      return {
+        isSearching: !state.isSearching
+      }
+    });
+  }
+
+  handleClickAdd() {
+    this.setState(state => {
+      return {
+        isSearching: !state.isSearching
+      }
+    });
+  }
+
+  handleAddToQueue(track) {
+    // Send to server
+    this.socket.emit("add song", track);
   }
 
   handleLogin(token, deviceId) {
@@ -147,7 +166,8 @@ class App extends Component {
       track,
       progress_ms,
       playlist,
-      activeMemberCount
+      activeMemberCount,
+      isSearching
     } = this.state;
     if (redirect) {
       return <Redirect to="/login" />
@@ -165,9 +185,13 @@ class App extends Component {
                 track={track}
                 progress_ms={progress_ms}
                 playlist={playlist}
-                onQueueAdd={this.handleQueueAdd}
+                onClickAdd={this.handleClickAdd}
                 activeMemberCount={activeMemberCount}
               />
+              <Search
+                isSearching={isSearching}
+                onClick={this.closeSearch}
+                onAddToQueue={this.handleAddToQueue} />
             </Route>
           </Switch>
         </Router>
