@@ -41,8 +41,6 @@ const spotifyAuth = {
     appToken: null
 }
 
-// LEFT OFF HERE - need to block remaining execution until we have app token
-
 // Get Spotify app token
 spotify.getAppToken(spotifyAuth);
 
@@ -92,16 +90,88 @@ const handleGetCurrentlyPlaying = response => {
         }
     }
 }
-const handleSearchResults = (userId, response) => {
-    console.log(userId);
-    if (response.status === 200) {
-        console.log(response.data);
+
+const handleSearchResults = (userId, response, type) => {
+    try {
+        switch (type) {
+            case 'track':
+                const tracks = [];
+                for (let trackData of response.data.tracks.items) {
+                    let _track = spotify.extractTrack(trackData);
+                    if (_track) {
+                        tracks.push(_track);
+                    }
+                }
+                io.to(`${userId}`).emit("search", tracks);
+                break;
+            case 'artist':
+                const artists = [];
+                for (let artistData of response.data.artists.items) {
+                    let _artist = spotify.extractArtist(artistData);
+                    if (_artist) {
+                        artists.push(_artist);
+                    }
+                }
+                io.to(`${userId}`).emit("search", artists);
+                break;
+            case 'album':
+                const albums = [];
+                for (let albumData of response.data.albums.items) {
+                    let _album = spotify.extractAlbum(albumData);
+                    if (_album) {
+                        albums.push(_album);
+                    }
+                }
+                io.to(`${userId}`).emit("search", albums);
+                break;
+            default:
+                console.log("No type provided");
+        }
+    } catch (err) {
+        console.log("Error searching: ");
+        console.log(err);
     }
 }
-const handleAlbumTracks = (userId, response) => {
-    console.log(userId, response);
+
+const handleAlbums = (userId, response, event) => {
     if (response.status === 200) {
-        console.log(response.data);
+        const albums = [];
+        try {
+            for (let albumData of response.data.items) {
+                let _album = spotify.extractAlbum(albumData);
+                if (_album) {
+                    albums.push(_album);
+                }
+                io.to(`${userId}`).emit(event, albums);
+            }
+        } catch (err) { console.log(err); }
+    }
+}
+
+const handleTracks = (userId, response, event) => {
+    /**
+     * We have the album already, which includes the art. Now, the user
+     * has drilled down to tracks. Extract and return the tracks.
+     */
+    if (response.status === 200) {
+        const tracks = [];
+        try {
+            // Extract tracks
+            let data = '';
+            if (response.data.items) {
+                data = response.data.items;
+            }
+            if (response.data.tracks) {
+                data = response.data.tracks;
+            }
+            for (let trackData of data) {
+                let _track = spotify.extractTrack(trackData);
+                if (_track) {
+                    tracks.push(_track);
+                }
+            }
+            io.to(`${userId}`).emit(event, tracks);
+        } catch (err) { console.log(err); }
     }
 }
 
@@ -149,18 +219,49 @@ io.on("connection", socket => {
     });
 
     // Handle queue remove
-    socket.on("remove song", (socket, index) => {
+    socket.on("remove song", index => {
         handleRemoveSong(socket.id, index);
     });
 
     // Handle search
-    socket.on("search", (socket, search) => {
-
+    socket.on("search", search => {
+        console.log(search);
+        // LEFT OFF HERE - and in client
+        // console.log(`Recieved search: ${search.query} of type ${search.type}`);
+        // Search - track
+        // spotify.search(
+        //     spotifyAuth.appToken,
+        //     socket.id,
+        //     search.query,
+        //     search.type,
+        //     handleSearchResults
+        // );
+    });
+    // Handle Artist Top Tracks
+    socket.on("artistTopTracks", artistId => {
+        spotify.fetchArtistTopTracks(
+            spotifyAuth.appToken,
+            socket.id,
+            artistId,
+            handleTracks);
+    });
+    // Handle Artist Albums
+    socket.on("artistAlbums", artistId => {
+        spotify.fetchArtistAlbums(
+            spotifyAuth.appToken,
+            socket.id,
+            artistId,
+            handleAlbums);
     });
 
-    // Handle get artist albums
-
-    // Handle get album tracks
+    // Handle abum Tracks
+    socket.on("albumTracks", albumId => {
+        spotify.fetchAlbumTracks(
+            spotifyAuth.appToken,
+            socket.id,
+            albumId,
+            handleTracks);
+    });
 
     // Handle disconnect
     socket.on("disconnect", () => {

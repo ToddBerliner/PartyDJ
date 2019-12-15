@@ -32,13 +32,15 @@ class App extends Component {
       track: tracks[0],
       is_playing: false,
       progress_ms: 0,
-      isSearching: false
+      isSearching: false,
+      socket: null
     }
     this.handleLogin = this.handleLogin.bind(this);
     this.handleStationState = this.handleStationState.bind(this);
     this.handleClickAdd = this.handleClickAdd.bind(this);
     this.handleAddToQueue = this.handleAddToQueue.bind(this);
     this.closeSearch = this.closeSearch.bind(this);
+
     this.tracks = [
       {
         uri: "spotify:track:49yNhtVHCnmBomxm1kWssH",
@@ -95,11 +97,13 @@ class App extends Component {
     const { endpoint } = this.state;
     this.socket = socketIOClient(endpoint);
     this.socket.on("connect", () => {
-      this.setState({ userId: this.socket.id });
+      this.setState({
+        socket: this.socket,
+        userId: this.socket.id
+      });
     });
     this.socket.on("station state",
       stationState => this.handleStationState(stationState));
-
     if (window.location.hash === '#f') {
       this.tracks = this.tracks.slice(0, 3);
     } else {
@@ -167,7 +171,8 @@ class App extends Component {
       progress_ms,
       playlist,
       activeMemberCount,
-      isSearching
+      isSearching,
+      socket
     } = this.state;
     if (redirect) {
       return <Redirect to="/login" />
@@ -188,10 +193,15 @@ class App extends Component {
                 onClickAdd={this.handleClickAdd}
                 activeMemberCount={activeMemberCount}
               />
-              <Search
-                isSearching={isSearching}
-                onClick={this.closeSearch}
-                onAddToQueue={this.handleAddToQueue} />
+              {
+                socket === null
+                  ? null
+                  : <Search
+                    socket={socket}
+                    isSearching={isSearching}
+                    onClick={this.closeSearch}
+                    onAddToQueue={this.handleAddToQueue} />
+              }
             </Route>
           </Switch>
         </Router>

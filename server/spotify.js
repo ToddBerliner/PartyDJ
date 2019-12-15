@@ -3,8 +3,8 @@
 const axios = require("axios");
 const querystring = require("querystring");
 
-module.exports.getAppToken = spotifyAuth => {
-    const base64data = new Buffer("5624ad43c59e452fa3878109bb0f7783:dad234b4a3fe4d93b62fc2543f45b887").toString('base64');
+module.exports.getAppToken = async function (spotifyAuth) {
+    const base64data = new Buffer.from("5624ad43c59e452fa3878109bb0f7783:dad234b4a3fe4d93b62fc2543f45b887").toString('base64');
     const config = {
         headers: {
             'content-type': 'application/x-www-form-urlencoded',
@@ -12,7 +12,7 @@ module.exports.getAppToken = spotifyAuth => {
         }
     };
     const data = querystring.stringify({ grant_type: 'client_credentials' });
-    axios.post("https://accounts.spotify.com/api/token", data, config)
+    await axios.post("https://accounts.spotify.com/api/token", data, config)
         .then(response => {
             if (response.status === 200
                 && response.data
@@ -26,21 +26,86 @@ module.exports.getAppToken = spotifyAuth => {
         });
 }
 
-module.exports.search = (userId, query, type, handler) => { }
+module.exports.search = (token, userId, query, type, handler) => {
+    axios.get(`https://api.spotify.com/v1/search?q=${query}&type=${type}&limit=50`,
+        {
+            headers: { "Authorization": "Bearer " + token }
+        })
+        .then(response => {
+            handler(userId, response, type);
+        })
+        .catch(err => { console.log(err); return false });
+}
 
 module.exports.fetchAlbumTracks = (token, userId, albumId, handler) => {
-    axios.get(`https://api.spotify.com/v1/albums/${albumId}/tracks`,
+    axios.get(`https://api.spotify.com/v1/albums/${albumId}/tracks?limit=50`,
+        {
+            headers: { "Authorization": "Bearer " + token }
+        })
+        .then(response => {
+            handler(userId, response, "albumTracks");
+        })
+        .catch(err => { console.log(err); return false });
+}
+
+module.exports.fetchArtistAlbums = (token, userId, artistId, handler) => {
+    axios.get(`https://api.spotify.com/v1/artists/${artistId}/albums?limit=50`,
         {
             headers: { "Authorization": "Bearer " + token }
         }
     )
         .then(response => {
-            handler(userId, response);
+            handler(userId, response, "artistAlbums");
         })
         .catch(err => { console.log(err) });
 }
 
-module.exports.fetchArtist = (userId, artistId, handler) => { }
+module.exports.fetchArtistTopTracks = (token, userId, artistId, handler) => {
+    axios.get(`https://api.spotify.com/v1/artists/${artistId}/top-tracks?country=US`,
+        {
+            headers: { "Authorization": "Bearer " + token }
+        }
+    )
+        .then(response => {
+            handler(userId, response, "artistTracks");
+        })
+        .catch(err => { console.log(err) });
+}
+
+module.exports.extractAlbum = album => {
+    if (album === null) {
+        return false;
+    }
+    let artUrl = "";
+    let artist = "";
+    try {
+        artUrl = album.images[0].url;
+        artist = album.artists[0].name;
+    } catch (err) { console.log(err, album); return false }
+    return {
+        uri: album.uri,
+        artUrl,
+        artist,
+        name: album.name
+    }
+}
+
+module.exports.extractArtist = artist => {
+    if (artist === null) {
+        return false;
+    }
+
+    let artUrl = "";
+    try {
+        artUrl = artist.images[0].url;
+    } catch (err) { console.log(err); return false }
+
+    return {
+        uri: artist.uri,
+        name: artist.name,
+        artUrl
+    }
+}
 
 module.exports.extractTrack = track => {
 
@@ -50,19 +115,23 @@ module.exports.extractTrack = track => {
 
     let artUrl = "";
     let artist = null;
+    let albumName = "";
+    if (track.album) {
+        try {
+            artUrl = track.album.images[0].url;
+            albumName = track.album.name;
+        } catch (err) { }
+    }
     try {
-        artUrl = track.album.images[0].url;
         artist = track.artists[0].name;
-        return {
-            uri: track.uri,
-            artUrl: artUrl,
-            name: track.name,
-            albumName: track.album.name,
-            artist: artist,
-            duration_ms: track.duration_ms
-        }
-    } catch (err) {
-        return false;
+    } catch (err) { console.log(err); return false }
+    return {
+        uri: track.uri,
+        artUrl: artUrl,
+        name: track.name,
+        albumName: albumName,
+        artist: artist,
+        duration_ms: track.duration_ms
     }
 }
 

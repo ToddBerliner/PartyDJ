@@ -175,6 +175,11 @@
   font-size: 18px;
   color: #FFF;
 }
+.search-loading {
+  text-align: center;
+  font-size: 18px;
+  margin-top: 28px;
+}
 .search-results {
   flex: 1;
   overflow-y: scroll;

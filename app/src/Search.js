@@ -15,20 +15,64 @@ import tracks from "./scratch/playlistData.js";
     --- getArtistAlbums -> getAlbumTracks
 */
 
+const Form = props => {
+    const { handleSubmit, handleChange, search } = props;
+    return (
+        <form
+            onSubmit={handleSubmit}
+            className="search-input-wrap">
+            <input
+                type="text"
+                placeholder="Search"
+                className="search-input"
+                name="search"
+                value={search}
+                onChange={handleChange} />
+            <input
+                type="submit"
+                className="search-button"
+                value="Go" />
+        </form>
+    );
+}
+
+const SearchResults = props => {
+    const { data, clickHandler } = props;
+    if (data.length === 0) {
+        return (<div className="no-data">No results</div>);
+    }
+    let results = [];
+    // TODO: handle type hear to render correct search type (tracks, albums, artists)
+    // The drill downs should use different "panes" to allow pushing and popping 
+    data.map((track, index) => {
+        results.push(<SongCell
+            key={index}
+            track={track}
+            onClick={() => clickHandler(track)} />);
+    });
+    return results;
+}
+
 class Search extends Component {
     constructor(props) {
         super(props);
-        const _tracks = [...tracks];
-        _tracks.push(...tracks);
-        _tracks.push(...tracks);
         this.state = {
-            tracks: _tracks,
+            search: '',
+            loading: false,
+            type: 'track',
+            tracks: [],
             albums: [],
-            artists: [],
-            search: ''
+            artists: []
         }
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+    }
+
+    componentDidMount() {
+        this.props.socket.on("search", searchResults => {
+            console.log("Got results:");
+            console.log(searchResults);
+        });
     }
 
     handleChange(event) {
@@ -36,43 +80,43 @@ class Search extends Component {
     }
 
     handleSubmit(event) {
-        console.log(`searching: ${this.state.search}`);
-        event.preventDefault();
+        if (this.state.search !== '') {
+            this.setState({ loading: true });
+            this.props.socket.emit("search", {
+                query: this.state.search,
+                type: this.state.type
+            });
+            event.preventDefault();
+        }
     }
 
     render() {
-        const { tracks } = this.state;
+        const { search, type, loading, tracks } = this.state;
         const { isSearching, onClick, onAddToQueue } = this.props;
         const closedClass = isSearching ? '' : 'closed';
+
+        let data = [];
+        switch (type) {
+            case 'track':
+                data = tracks;
+                break;
+            default:
+                data = [];
+        }
+
         return (
             <div className={"Search " + closedClass}>
-                <form
-                    onSubmit={this.handleSubmit}
-                    className="search-input-wrap">
-                    <input
-                        type="text"
-                        placeholder="Search"
-                        className="search-input"
-                        name="search"
-                        value={this.state.search}
-                        onChange={this.handleChange} />
-                    <input
-                        type="submit"
-                        className="search-button"
-                        value="Go" />
-                </form>
+                <Form
+                    handleSubmit={this.handleSubmit}
+                    handleChange={this.handleChange}
+                    search={search} />
                 <div className="search-results">
                     {
-                        tracks.length > 0
-                            ? tracks.map((track, index) => {
-                                return (
-                                    <SongCell
-                                        key={index}
-                                        track={track}
-                                        onClick={() => onAddToQueue(track)} />
-                                );
-                            })
-                            : null
+                        loading
+                            ? <div className="search-loading">Loading...</div>
+                            : <SearchResults
+                                data={data}
+                                clickHandler={(track) => onAddToQueue(track)} />
                     }
                 </div>
                 <div className="search-closer">
