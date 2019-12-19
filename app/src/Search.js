@@ -75,7 +75,7 @@ const Form = props => {
 const SearchResults = props => {
     const { data, clickHandler, type } = props;
     if (data.length === 0) {
-        return (<div className="no-data">No results</div>);
+        return (<div className="search-loading no-data">No results</div>);
     }
     let results = [];
     for (let [index, item] of data.entries()) {

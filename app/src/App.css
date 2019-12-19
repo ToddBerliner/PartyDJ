@@ -197,6 +197,9 @@
   font-size: 18px;
   margin-top: 28px;
 }
+.no-data {
+  color: #b9b9b9;
+}
 .search-results {
   flex: 1;
   overflow-y: scroll;
