@@ -144,6 +144,23 @@
   bottom: -95%;
 }
 .search-input-wrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: center
+}
+.search-nav {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 20px 30px 8px 30px;
+  font-size: 22px;
+  color: rgb(0, 102, 122);
+}
+.search-active {
+  color: #FFF;
+  border-bottom: 2px solid;
+}
+.search-inputs {
   align-items: stretch;
   justify-content: center;
   padding: 8px 0px;

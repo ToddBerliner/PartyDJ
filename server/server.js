@@ -225,17 +225,18 @@ io.on("connection", socket => {
 
     // Handle search
     socket.on("search", search => {
-        console.log(search);
-        // LEFT OFF HERE - and in client
-        // console.log(`Recieved search: ${search.query} of type ${search.type}`);
-        // Search - track
-        // spotify.search(
-        //     spotifyAuth.appToken,
-        //     socket.id,
-        //     search.query,
-        //     search.type,
-        //     handleSearchResults
-        // );
+        if (search.query && search.type) {
+            console.log(`Recieved search: ${search.query} of type ${search.type}`);
+            // Search - track
+            const { query, type } = search;
+            spotify.search(
+                spotifyAuth.appToken,
+                socket.id,
+                search.query,
+                search.type,
+                handleSearchResults
+            );
+        }
     });
     // Handle Artist Top Tracks
     socket.on("artistTopTracks", artistId => {

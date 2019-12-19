@@ -32,7 +32,7 @@ class App extends Component {
       track: tracks[0],
       is_playing: false,
       progress_ms: 0,
-      isSearching: false,
+      isSearching: true,
       socket: null
     }
     this.handleLogin = this.handleLogin.bind(this);
@@ -116,8 +116,8 @@ class App extends Component {
   }
 
   handleStationState(stationState) {
-    console.log(`got station state:`);
-    console.log(stationState);
+    // console.log(`got station state:`);
+    // console.log(stationState);
     const { is_playing, progress_ms, track, playlist, activeMemberCount } = stationState;
     this.setState({
       activeMemberCount,
