@@ -29,7 +29,7 @@ class App extends Component {
       deviceId: null,
       playlist: [],
       songsAhead: 0,
-      track: tracks[0],
+      track: null,
       is_playing: false,
       progress_ms: 0,
       isSearching: false,
