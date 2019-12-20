@@ -5,7 +5,7 @@ import AlbumCell from "./AlbumCell";
 import playlist from "./scratch/playlistData";
 
 const Form = props => {
-    const { handleSubmit, handleChange, search, type, handleType } = props;
+    const { handleSubmit, handleChange, search, type, handleType, handleClear } = props;
     return (
         <form
             onSubmit={handleSubmit}
@@ -28,13 +28,20 @@ const Form = props => {
                     onClick={() => handleType('album')}>Albums</div>
             </div>
             <div className="search-inputs">
-                <input
-                    type="text"
-                    placeholder="Search"
-                    className="search-input"
-                    name="search"
-                    value={search}
-                    onChange={handleChange} />
+                <div className="search-wrap">
+                    <input
+                        type="text"
+                        placeholder="Search"
+                        className="search-input"
+                        name="search"
+                        value={search}
+                        onChange={handleChange} />
+                    <button
+                        type="button"
+                        disabled={search === ""}
+                        className="search-clear"
+                        onClick={handleClear}>X</button>
+                </div>
                 <input
                     type="submit"
                     className="search-button"
@@ -84,14 +91,15 @@ class Search extends Component {
             tracks: [],
             albums: [],
             artists: [],
-            selectedItem: {},
-            detailLoading: true,
-            detailTracks: playlist
+            selectedItem: null,
+            detailLoading: false,
+            detailTracks: []
         }
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleSearchResults = this.handleSearchResults.bind(this);
         this.handleSearchDetailResults = this.handleSearchDetailResults.bind(this);
+        this.handleClear = this.handleClear.bind(this);
 
         this.handleType = this.handleType.bind(this);
         this.handleArtistClick = this.handleArtistClick.bind(this);
@@ -102,6 +110,19 @@ class Search extends Component {
     componentDidMount() {
         this.props.socket.on("search", this.handleSearchResults);
         this.props.socket.on("albumTracks", this.handleSearchDetailResults);
+    }
+
+    handleClear() {
+        this.setState({
+            loading: false,
+            tracks: [],
+            albums: [],
+            artists: [],
+            selectedItem: null,
+            detailLoading: false,
+            detailTracks: [],
+            search: ""
+        });
     }
 
     handleSearchResults(searchResults) {
@@ -161,7 +182,7 @@ class Search extends Component {
                 albums: [],
                 artists: [],
                 selectedItem: null,
-                detailLoad: false,
+                detailLoading: false,
                 detailTracks: []
             });
             this.props.socket.emit("search", {
@@ -249,6 +270,7 @@ class Search extends Component {
                 <Form
                     handleSubmit={this.handleSubmit}
                     handleChange={this.handleChange}
+                    handleClear={this.handleClear}
                     search={search}
                     handleType={this.handleType}
                     type={type} />

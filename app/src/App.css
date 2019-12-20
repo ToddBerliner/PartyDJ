@@ -146,7 +146,7 @@
 .search-input-wrap {
   display: flex;
   flex-direction: column;
-  justify-content: center
+  justify-content: center;
 }
 .search-nav {
   display: flex;
@@ -166,20 +166,38 @@
   padding: 8px 0px;
   display: flex;
 }
+.search-wrap {
+  position: relative;
+  flex: 1;
+}
 .search-input {
   font-size: 18px;
   color: #11303B;
-  width: 90%;
-  padding: 10px;
+  width: 95%;
+  padding: 10px 37px 10px 10px;
   border-radius: 8px 14px;
   border: 0;
   background-color: #333;
   color: #ffffff;
   -moz-appearance: none;
   -webkit-appearance: none;
-  flex: 1;
   margin-left: 14px;
   font-family: "Ubuntu", sans-serif;
+}
+.search-clear {
+  position: absolute;
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: #e0e0e0;
+  border-radius: 15px;
+  left: 90%;
+  top: 10px;
+  font-family: "Ubuntu", sans-serif;
+  font-weight: bold;
+}
+.search-clear:disabled {
+  background: rgb(90, 90, 90);
 }
 .search-button {
   border: none;

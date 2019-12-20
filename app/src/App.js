@@ -32,7 +32,7 @@ class App extends Component {
       track: tracks[0],
       is_playing: false,
       progress_ms: 0,
-      isSearching: true,
+      isSearching: false,
       socket: null
     }
     this.handleLogin = this.handleLogin.bind(this);
