@@ -104,11 +104,6 @@ class App extends Component {
     });
     this.socket.on("station state",
       stationState => this.handleStationState(stationState));
-    if (window.location.hash === '#f') {
-      this.tracks = this.tracks.slice(0, 3);
-    } else {
-      this.tracks = this.tracks.slice(3);
-    }
   }
 
   componentWillUnmount() {
@@ -209,8 +204,5 @@ class App extends Component {
     }
   }
 }
-
-// /start -> setIsMaster, get token + device id -> go to /master
-// /member -> start polling
 
 export default App;

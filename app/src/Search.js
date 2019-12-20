@@ -2,35 +2,7 @@ import React, { Component } from 'react';
 import SongCell from "./SongCell";
 import ArtistCell from "./ArtistCell";
 import AlbumCell from "./AlbumCell";
-/*
-    Search: By Track | By Artist | By Album
-    - enter search, io.emit("search", {
-        query: 'string',
-        type: 'track|artist|album'
-    })
-    - display results
-    -- track -> tap -> io.emit("add song")
-    -- artist, album -> tap -> io.emit("get artist|album")
-    --- getAlbumTracks
-    --- getArtistAlbums -> getAlbumTracks
-    --- getArtistTopTracks
-
-    - artist
-    -- top tracks
-    --- tracks
-    -- albums
-    --- tracks
-
-    - albums
-    -- tracks
-
-    pane: level
-    title: Tracks | Albums | Artists | Album Title | Artist Name | Artist Name, Album Title
-
-    <TracksPane>
-    <ArtistPane>
-    <AlbumPane>
-*/
+import playlist from "./scratch/playlistData";
 
 const Form = props => {
     const { handleSubmit, handleChange, search, type, handleType } = props;
@@ -111,18 +83,25 @@ class Search extends Component {
             type: 'track',
             tracks: [],
             albums: [],
-            artists: []
+            artists: [],
+            selectedItem: {},
+            detailLoading: true,
+            detailTracks: playlist
         }
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleSearchResults = this.handleSearchResults.bind(this);
+        this.handleSearchDetailResults = this.handleSearchDetailResults.bind(this);
+
         this.handleType = this.handleType.bind(this);
         this.handleArtistClick = this.handleArtistClick.bind(this);
         this.handleAlbumClick = this.handleAlbumClick.bind(this);
+        this.handleDetailClose = this.handleDetailClose.bind(this);
     }
 
     componentDidMount() {
         this.props.socket.on("search", this.handleSearchResults);
+        this.props.socket.on("albumTracks", this.handleSearchDetailResults);
     }
 
     handleSearchResults(searchResults) {
@@ -149,13 +128,42 @@ class Search extends Component {
         }
     }
 
+    handleSearchDetailResults(searchResults) {
+        if (searchResults.length > 0) {
+            const { artUrl, name } = this.state.selectedItem;
+            for (let key in searchResults) {
+                searchResults[key].artUrl = artUrl;
+                searchResults[key].albumName = name;
+            }
+        }
+        this.setState({
+            detailLoading: false,
+            detailTracks: searchResults
+        });
+    }
+
+    handleDetailClose() {
+        this.setState({
+            selectedItem: null,
+            detailTracks: []
+        });
+    }
+
     handleChange(event) {
         this.setState({ search: event.target.value });
     }
 
     handleSubmit(event) {
         if (this.state.search !== '') {
-            this.setState({ loading: true });
+            this.setState({
+                loading: true,
+                tracks: [],
+                albums: [],
+                artists: [],
+                selectedItem: null,
+                detailLoad: false,
+                detailTracks: []
+            });
             this.props.socket.emit("search", {
                 query: this.state.search,
                 type: this.state.type
@@ -169,7 +177,12 @@ class Search extends Component {
     }
 
     handleAlbumClick(album) {
-        console.log(`clicked album: ${album.name}`);
+        document.getElementsByClassName("search-results")[0].scrollTop = 0;
+        this.setState({
+            detailLoading: true,
+            selectedItem: album
+        });
+        this.props.socket.emit("albumTracks", album.uri);
     }
 
     handleType(type) {
@@ -177,10 +190,23 @@ class Search extends Component {
     }
 
     render() {
-        const { search, type, loading, tracks, albums, artists } = this.state;
+        const {
+            search,
+            type,
+            loading,
+            tracks,
+            albums,
+            artists,
+            selectedItem,
+            detailLoading,
+            detailTracks } = this.state;
         const { isSearching, onClick, onAddToQueue } = this.props;
         const closedClass = isSearching ? '' : 'closed';
+        const detailClosedClass = selectedItem === null
+            ? 'closed'
+            : '';
 
+        // Set data for main search results
         let data = [];
         switch (type) {
             case 'track':
@@ -196,6 +222,7 @@ class Search extends Component {
                 data = [];
         }
 
+        // Build main search results
         let searchResults = null;
         switch (type) {
             case 'artist':
@@ -231,6 +258,29 @@ class Search extends Component {
                             ? <div className="search-loading">Loading...</div>
                             : searchResults
                     }
+                    <div className={`search-results-detail ${detailClosedClass}`}>
+                        <button
+                            className="detail-close"
+                            type="button"
+                            onClick={this.handleDetailClose}>&lt; BACK</button>
+                        <div className="search-loading">
+                            {
+                                selectedItem === null
+                                    ? ''
+                                    : selectedItem.name
+                            }
+                        </div>
+                        <div className={detailLoading ? "search-loading" : ""}>
+                            {
+                                detailLoading
+                                    ? "Loading..."
+                                    : <SearchResults
+                                        data={detailTracks}
+                                        clickHandler={(track) => onAddToQueue(track)}
+                                        type='track' />
+                            }
+                        </div>
+                    </div>
                 </div>
                 <div className="search-closer">
                     <button

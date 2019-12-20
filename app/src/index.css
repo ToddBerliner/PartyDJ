@@ -11,7 +11,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: #000000;
   color: #eee;
-  font-size: 3vmin;
+  font-size: 12px;
+}
+button {
+  background-color: transparent;
+  border: 0;
+  font-family: "Ubuntu", sans-serif;
 }
 
 #root {

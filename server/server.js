@@ -246,21 +246,21 @@ io.on("connection", socket => {
             artistId,
             handleTracks);
     });
-    // Handle Artist Albums
-    socket.on("artistAlbums", artistId => {
-        spotify.fetchArtistAlbums(
-            spotifyAuth.appToken,
-            socket.id,
-            artistId,
-            handleAlbums);
-    });
+    // Handle Artist Albums - not going to use this one - only top tracks for artist drill down
+    // socket.on("artistAlbums", artistId => {
+    //     spotify.fetchArtistAlbums(
+    //         spotifyAuth.appToken,
+    //         socket.id,
+    //         artistId,
+    //         handleAlbums);
+    // });
 
     // Handle abum Tracks
-    socket.on("albumTracks", albumId => {
+    socket.on("albumTracks", albumUri => {
         spotify.fetchAlbumTracks(
             spotifyAuth.appToken,
             socket.id,
-            albumId,
+            spotify.extractId(albumUri),
             handleTracks);
     });
 

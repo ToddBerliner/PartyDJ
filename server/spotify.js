@@ -3,6 +3,10 @@
 const axios = require("axios");
 const querystring = require("querystring");
 
+module.exports.extractId = uri => {
+    return [...uri.split(":")].pop();
+}
+
 module.exports.getAppToken = async function (spotifyAuth) {
     const base64data = new Buffer.from("5624ad43c59e452fa3878109bb0f7783:dad234b4a3fe4d93b62fc2543f45b887").toString('base64');
     const config = {

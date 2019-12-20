@@ -3,7 +3,10 @@ import React from "react";
 const SongCell = props => {
 
     const { artUrl, name, artist, albumName } = props.track;
-    const { onClick } = props;
+    let { onClick } = props;
+    if (!onClick) {
+        onClick = () => { }
+    }
 
     const backgroundStyles = {
         backgroundImage: `url(${artUrl})`,

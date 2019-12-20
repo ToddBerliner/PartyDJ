@@ -57,7 +57,8 @@ const Player = props => {
                         {
                             playlist.length > 0
                                 ? <SongCell
-                                    track={playlist[0]} />
+                                    track={playlist[0]}
+                                />
                                 : null
                         }
                     </div>
