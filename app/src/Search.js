@@ -110,6 +110,7 @@ class Search extends Component {
     componentDidMount() {
         this.props.socket.on("search", this.handleSearchResults);
         this.props.socket.on("albumTracks", this.handleSearchDetailResults);
+        this.props.socket.on("artistTracks", this.handleSearchDetailResults);
     }
 
     handleClear() {
@@ -194,7 +195,12 @@ class Search extends Component {
     }
 
     handleArtistClick(artist) {
-        console.log(`clicked artist: ${artist.name}`);
+        document.getElementsByClassName("search-results")[0].scrollTop = 0;
+        this.setState({
+            detailLoading: true,
+            selectedItem: artist
+        });
+        this.props.socket.emit("artistTopTracks", artist.uri);
     }
 
     handleAlbumClick(album) {
@@ -207,7 +213,7 @@ class Search extends Component {
     }
 
     handleType(type) {
-        this.setState({ type });
+        this.setState({ type, selectedItem: null });
     }
 
     render() {

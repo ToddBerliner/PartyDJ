@@ -71,7 +71,7 @@ module.exports.getPlaylist = (users) => {
 }
 
 module.exports.removeTrack = (users, trackUri) => {
-    console.log(`trying to remove track ${trackUri}`);
+    // console.log(`trying to remove track ${trackUri}`);
     for (let user in users) {
         users[user].playlist = users[user].playlist.filter(track => {
             return trackUri !== track.uri;

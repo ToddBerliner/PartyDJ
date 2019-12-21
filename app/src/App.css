@@ -197,7 +197,7 @@
   font-weight: bold;
 }
 .search-clear:disabled {
-  background: rgb(90, 90, 90);
+  background: #505050;
 }
 .search-button {
   border: none;

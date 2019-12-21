@@ -111,7 +111,7 @@ class App extends Component {
   }
 
   handleStationState(stationState) {
-    // console.log(`got station state:`);
+    console.log(`got station state:`);
     // console.log(stationState);
     const { is_playing, progress_ms, track, playlist, activeMemberCount } = stationState;
     this.setState({
