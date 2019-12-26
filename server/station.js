@@ -2,23 +2,6 @@
 
 const spotify = require("./spotify.js");
 
-/*
-    Flow is
-    - client.emit(track) // client sends full track
-    - server.users[userId].playlist.push(track) // next emit(stationState) updates client
-    - updateSystemTracks() // creates backfill
-    
-    Users holds user playlists as is
-    updatePlaylist
-    -- copy users
-    -- build playlist (destructive to users copy)
-    -- backfill if needed
-    -- replace tracks in spotify
-    getCurrentlyPlaying
-    -- find track in users & delete it (will update user specific state)
-
-*/
-
 module.exports.getStationState = (user, state) => {
     if (typeof user === 'undefined') {
         return state;
@@ -32,12 +15,16 @@ module.exports.getStationState = (user, state) => {
 module.exports.getPlaylist = (users) => {
 
     const playlist = [];
+    const seeds = {};
 
     // Resursive function
     const gnt = (nextUserId, users, empty = []) => {
 
+        console.log(`At ${empty.length} empty of ${Object.keys(users).length}`);
+
         // Stop recursion when all tracks are added to the playlist
         if (empty.length === Object.keys(users).length) {
+            console.log("empty - returning");
             return false;
         }
 
@@ -45,9 +32,12 @@ module.exports.getPlaylist = (users) => {
         if (users[nextUserId].playlist.length > 0) {
             const track = users[nextUserId].playlist.shift();
             playlist.push(track.uri);
+            seeds[nextUserId] = track.uri;
+            console.log("added track");
         } else {
             // Mark this user empty if not already marked
             if (!empty.includes(nextUserId)) {
+                console.log(`marking ${nextUserId} empty`);
                 empty.push(nextUserId);
             }
         }
@@ -55,10 +45,11 @@ module.exports.getPlaylist = (users) => {
         // Move on to next user
         nextUserId = users[nextUserId].next;
 
+        console.log(`at end of first run with ${empty.length} empty of ${Object.keys(users).length}`);
         return gnt(nextUserId, users, empty);
     }
 
-    // If no users empty, return false
+    // If no users, return false
     if (Object.keys(users).length === 0) {
         return false;
     }

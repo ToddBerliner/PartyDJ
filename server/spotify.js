@@ -7,7 +7,18 @@ module.exports.extractId = uri => {
     return [...uri.split(":")].pop();
 }
 
-module.exports.getAppToken = async function (spotifyAuth) {
+module.exports.getRecommendations = (token, trackIds, handler) => {
+    axios.get(`https://api.spotify.com/v1/recommendations?seed_tracks=${trackIds.join(",")}&limit=50`,
+        {
+            headers: { "Authorization": "Bearer " + token }
+        })
+        .then(response => {
+            handler(response);
+        })
+        .catch(err => { console.log(err); return false });
+}
+
+module.exports.getAppToken = async function (spotifyAuth, handler = null) {
     const base64data = new Buffer.from("5624ad43c59e452fa3878109bb0f7783:dad234b4a3fe4d93b62fc2543f45b887").toString('base64');
     const config = {
         headers: {
@@ -23,6 +34,9 @@ module.exports.getAppToken = async function (spotifyAuth) {
                 && response.data.access_token) {
                 spotifyAuth.appToken = response.data.access_token;
                 console.log(`Set app token: ${spotifyAuth.appToken}`);
+                if (handler !== null) {
+                    handler(spotifyAuth.appToken);
+                }
             }
         })
         .catch(err => {

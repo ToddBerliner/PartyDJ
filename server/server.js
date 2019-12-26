@@ -42,7 +42,7 @@ const spotifyAuth = {
 }
 
 // Get Spotify app token
-spotify.getAppToken(spotifyAuth);
+spotify.getAppToken(spotifyAuth, null);
 
 // Spotify heartbeat
 let spotifyHeartbeat = setInterval(() => {
@@ -65,7 +65,31 @@ const handleNewTracks = () => {
     // get new playlist
     const _users = JSON.parse(JSON.stringify(users));
     const trackUris = station.getPlaylist(_users);
-    // TODO: backfill if necessary
+    // add backfill if necessary
+    if (trackUris.length < 51) {
+        console.log(">>> Getting recos");
+        const trackIds = trackUris.map(trackUri => spotify.extractId(trackUri));
+        spotify.getRecommendations(spotifyAuth.appToken, trackIds, (response) => {
+            // Compile the final playlist with backfill
+            if (response.status === 200
+                && response.data
+                && response.data.tracks) {
+                for (let track of response.data.tracks) {
+                    trackUris.push(track.uri);
+                }
+                console.log(`>>> GOT recos ${trackUris.length}`);
+            }
+            handleUpdatedPlaylist(trackUris);
+        });
+    } else {
+        // Go ahead and update the playlist
+        console.log(`Already have encouhd: ${trackUris.length}`);
+        handleUpdatedPlaylist(trackUris);
+    }
+}
+
+const handleUpdatedPlaylist = (trackUris) => {
+    console.log(">>> Got playlist to update in Spotify");
     // update spotify playlist
     spotify.updatePlaylist(spotifyAuth.token, spotifyAuth.playlistId, trackUris);
 }
