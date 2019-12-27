@@ -229,9 +229,14 @@ class Search extends Component {
             detailTracks } = this.state;
         const { isSearching, onClick, onAddToQueue } = this.props;
         const closedClass = isSearching ? '' : 'closed';
-        const detailClosedClass = selectedItem === null
-            ? 'closed'
-            : '';
+
+        // Set state and styles for search details
+        let detailClosedClass = 'closed';
+        let mainSearchScroll = 'scroll';
+        if (selectedItem !== null) {
+            detailClosedClass = '';
+            mainSearchScroll = 'hidden';
+        }
 
         // Set data for main search results
         let data = [];
@@ -280,7 +285,7 @@ class Search extends Component {
                     search={search}
                     handleType={this.handleType}
                     type={type} />
-                <div className="search-results">
+                <div className="search-results" style={{ overflowY: mainSearchScroll }}>
                     {
                         loading
                             ? <div className="search-loading">Loading...</div>

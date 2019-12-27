@@ -5,8 +5,6 @@ import Player from './Player.js';
 import Login from './Login.js';
 import Search from './Search.js';
 
-import tracks from './scratch/playlistData.js';
-
 import {
   BrowserRouter as Router,
   Switch,
@@ -21,7 +19,8 @@ class App extends Component {
     this.socket = null;
     this.state = {
       apiHost: window.location.host,
-      endpoint: 'http://localhost:4001',
+      // endpoint: 'http://localhost:4001',
+      endpoint: 'http://10.0.0.81:4001',
       userId: null,
       isMaster: false,
       activeMemberCount: 0,
