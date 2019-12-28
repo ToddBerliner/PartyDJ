@@ -4,6 +4,7 @@ import './App.css';
 import Player from './Player.js';
 import Login from './Login.js';
 import Search from './Search.js';
+import { endpoint } from './config.js';
 
 import {
   BrowserRouter as Router,
@@ -18,9 +19,6 @@ class App extends Component {
     super();
     this.socket = null;
     this.state = {
-      apiHost: window.location.host,
-      // endpoint: 'http://localhost:4001',
-      endpoint: 'http://10.0.0.81:4001',
       userId: null,
       isMaster: false,
       activeMemberCount: 0,
@@ -93,7 +91,9 @@ class App extends Component {
   }
 
   componentDidMount() {
-    const { endpoint } = this.state;
+
+    console.log(`endpoint: ${endpoint}`);
+
     this.socket = socketIOClient(endpoint);
     this.socket.on("connect", () => {
       this.setState({

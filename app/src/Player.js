@@ -12,6 +12,7 @@ const Player = props => {
         onClickAdd,
         activeMemberCount } = props;
     let { track } = props;
+    // TODO: get rid of emptyTrack and make components deal with null track
     if (track === null) {
         track = emptyTrack;
     }
