@@ -11,7 +11,7 @@ const playlistData = require("./src/playlistData.js");
 
 // configure server
 const port = 4001;
-const index = require("./routes/index");
+const index = require("./routes/index"); // TODO: this is uneccesary
 
 // create express app, init server and bind socket.io
 const app = express();

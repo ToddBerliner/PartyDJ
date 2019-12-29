@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import SongCell from "./SongCell";
 import ArtistCell from "./ArtistCell";
 import AlbumCell from "./AlbumCell";
-import playlist from "./scratch/playlistData";
 
 const Form = props => {
     const { handleSubmit, handleChange, search, type, handleType, handleClear } = props;
