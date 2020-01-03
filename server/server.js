@@ -10,7 +10,7 @@ const station = require("./station.js");
 const playlistData = require("./src/playlistData.js");
 
 // configure server
-const port = 4001;
+const port = 4000;
 const index = require("./routes/index"); // TODO: this is uneccesary
 
 // create express app, init server and bind socket.io
