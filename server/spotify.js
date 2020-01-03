@@ -40,19 +40,26 @@ module.exports.getAppToken = async function (spotifyAuth, handler = null) {
             }
         })
         .catch(err => {
-            console.log(err);
+            console.log(`Status of getAppToken: ${err}`);
         });
 }
 
-module.exports.search = (token, userId, query, type, handler) => {
+module.exports.search = (spotifyAuth, userId, query, type, handler) => {
     axios.get(`https://api.spotify.com/v1/search?q=${query}&type=${type}&limit=50`,
         {
-            headers: { "Authorization": "Bearer " + token }
+            headers: { "Authorization": "Bearer " + spotifyAuth.appToken }
         })
         .then(response => {
             handler(userId, response, type);
         })
-        .catch(err => { console.log(err); return false });
+        .catch(err => {
+            if (err.response.status === 401) {
+                // Auth again and run search
+                this.getAppToken(spotifyAuth, () => {
+                    this.search(spotifyAuth, userId, query, type, handler);
+                });
+            }
+        });
 }
 
 module.exports.fetchAlbumTracks = (token, userId, albumId, handler) => {

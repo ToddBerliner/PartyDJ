@@ -254,7 +254,7 @@ io.on("connection", socket => {
             // Search - track
             const { query, type } = search;
             spotify.search(
-                spotifyAuth.appToken,
+                spotifyAuth,
                 socket.id,
                 search.query,
                 search.type,
@@ -298,8 +298,8 @@ io.on("connection", socket => {
         usersMap.splice(usersMap.indexOf(userId), 1);
         // Update the users map
         updateUsersNext();
-        // Clear spotify heartbeat if this is the spotify user
-        if (userId === spotifyAuth.userId) {
+        // Clear spotify heartbeat if there are no more users
+        if (users.length === 0) {
             clearInterval(spotifyHeartbeat);
             state.track = null;
         }
