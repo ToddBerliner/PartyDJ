@@ -330,6 +330,24 @@
   border-radius: 7px;
   background-size: cover;
   background-position: center center;
+  position: relative;
+  overflow: hidden;
+}
+.song-art-img-checked {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #4a4a4a;
+  opacity: .6;
+}
+.song-art-check {
+  position: absolute;
+  top: 19%;
+  left: 18%;
+  font-size: 26px;
+  color: #67e5ff;
 }
 .song-details-cell {
   flex: 1;

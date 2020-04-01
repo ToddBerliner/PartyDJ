@@ -31,7 +31,7 @@ class App extends Component {
       progress_ms: 0,
       isSearching: false,
       socket: null
-    }
+    };
     this.handleLogin = this.handleLogin.bind(this);
     this.handleStationState = this.handleStationState.bind(this);
     this.handleClickAdd = this.handleClickAdd.bind(this);
@@ -92,7 +92,7 @@ class App extends Component {
 
   componentDidMount() {
 
-    console.log(`endpoint: ${endpoint}`);
+    // console.log(`endpoint: ${endpoint}`);
 
     this.socket = socketIOClient(endpoint);
     this.socket.on("connect", () => {
@@ -101,6 +101,7 @@ class App extends Component {
         userId: this.socket.id
       });
     });
+
     this.socket.on("station state",
       stationState => this.handleStationState(stationState));
   }
@@ -194,6 +195,7 @@ class App extends Component {
                     socket={socket}
                     isSearching={isSearching}
                     onClick={this.closeSearch}
+                    playlist={playlist}
                     onAddToQueue={this.handleAddToQueue} />
               }
             </Route>

@@ -20,11 +20,11 @@ module.exports.getPlaylist = (users) => {
     // Resursive function
     const gnt = (nextUserId, users, empty = []) => {
 
-        console.log(`At ${empty.length} empty of ${Object.keys(users).length}`);
+        // console.log(`At ${empty.length} empty of ${Object.keys(users).length}`);
 
         // Stop recursion when all tracks are added to the playlist
         if (empty.length === Object.keys(users).length) {
-            console.log("empty - returning");
+            // console.log("empty - returning");
             return false;
         }
 
@@ -33,11 +33,11 @@ module.exports.getPlaylist = (users) => {
             const track = users[nextUserId].playlist.shift();
             playlist.push(track.uri);
             seeds[nextUserId] = track.uri;
-            console.log("added track");
+            // ("added track");
         } else {
             // Mark this user empty if not already marked
             if (!empty.includes(nextUserId)) {
-                console.log(`marking ${nextUserId} empty`);
+                // console.log(`marking ${nextUserId} empty`);
                 empty.push(nextUserId);
             }
         }
@@ -45,7 +45,7 @@ module.exports.getPlaylist = (users) => {
         // Move on to next user
         nextUserId = users[nextUserId].next;
 
-        console.log(`at end of first run with ${empty.length} empty of ${Object.keys(users).length}`);
+        // console.log(`at end of first run with ${empty.length} empty of ${Object.keys(users).length}`);
         return gnt(nextUserId, users, empty);
     }
 

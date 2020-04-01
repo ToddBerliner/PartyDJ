@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import SongCell from "./SongCell";
 import ArtistCell from "./ArtistCell";
 import AlbumCell from "./AlbumCell";
 
 const Form = props => {
-    const { handleSubmit, handleChange, search, type, handleType, handleClear } = props;
+    const {handleSubmit, handleChange, search, type, handleType, handleClear} = props;
     return (
         <form
             onSubmit={handleSubmit}
@@ -14,17 +14,20 @@ const Form = props => {
                     className={`search-item 
                         ${type === 'track' ? "search-active" : ""}`
                     }
-                    onClick={() => handleType('track')}>Tracks</div>
+                    onClick={() => handleType('track')}>Tracks
+                </div>
                 <div
                     className={`search-item 
                         ${type === 'artist' ? "search-active" : ""}`
                     }
-                    onClick={() => handleType('artist')}>Artists</div>
+                    onClick={() => handleType('artist')}>Artists
+                </div>
                 <div
                     className={`search-item 
                         ${type === 'album' ? "search-active" : ""}`
                     }
-                    onClick={() => handleType('album')}>Albums</div>
+                    onClick={() => handleType('album')}>Albums
+                </div>
             </div>
             <div className="search-inputs">
                 <div className="search-wrap">
@@ -34,24 +37,33 @@ const Form = props => {
                         className="search-input"
                         name="search"
                         value={search}
-                        onChange={handleChange} />
+                        onChange={handleChange}/>
                     <button
                         type="button"
                         disabled={search === ""}
                         className="search-clear"
-                        onClick={handleClear}>X</button>
+                        onClick={handleClear}>X
+                    </button>
                 </div>
                 <input
                     type="submit"
                     className="search-button"
-                    value="Go" />
+                    value="Go"/>
             </div>
         </form>
     );
-}
+};
+
+const extractUris = playlist => {
+    const uris = {};
+    for (let track of playlist) {
+        uris[track.uri] = true;
+    }
+    return uris;
+};
 
 const SearchResults = props => {
-    const { data, clickHandler, type } = props;
+    const {data, clickHandler, type} = props;
     if (data.length === 0) {
         return (<div className="search-loading no-data">No results</div>);
     }
@@ -62,23 +74,24 @@ const SearchResults = props => {
                 results.push(<ArtistCell
                     key={index}
                     artist={item}
-                    onClick={() => clickHandler(item)} />);
+                    onClick={() => clickHandler(item)}/>);
                 break;
             case 'album':
                 results.push(<AlbumCell
                     key={index}
                     album={item}
-                    onClick={() => clickHandler(item)} />);
-                break
+                    onClick={() => clickHandler(item)}/>);
+                break;
             default:
                 results.push(<SongCell
                     key={index}
                     track={item}
-                    onClick={() => clickHandler(item)} />);
+                    checked={item.checked}
+                    onClick={() => clickHandler(item)}/>);
         }
     }
     return results;
-}
+};
 
 class Search extends Component {
     constructor(props) {
@@ -92,8 +105,9 @@ class Search extends Component {
             artists: [],
             selectedItem: null,
             detailLoading: false,
-            detailTracks: []
-        }
+            detailTracks: [],
+            queuedUris: extractUris(props.playlist)
+        };
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleSearchResults = this.handleSearchResults.bind(this);
@@ -127,7 +141,7 @@ class Search extends Component {
 
     handleSearchResults(searchResults) {
         // TODO: need to consider how to know if we're in a drill down search
-        const { type } = this.state;
+        const {type, queuedUris} = this.state;
         switch (type) {
             case 'album':
                 this.setState({
@@ -142,6 +156,9 @@ class Search extends Component {
                 });
                 break;
             default:
+                searchResults.forEach((track, index) => {
+                    searchResults[index].checked = queuedUris.hasOwnProperty(track.uri);
+                });
                 this.setState({
                     tracks: searchResults,
                     loading: false
@@ -151,7 +168,7 @@ class Search extends Component {
 
     handleSearchDetailResults(searchResults) {
         if (searchResults.length > 0) {
-            const { artUrl, name } = this.state.selectedItem;
+            const {artUrl, name} = this.state.selectedItem;
             for (let key in searchResults) {
                 searchResults[key].artUrl = artUrl;
                 searchResults[key].albumName = name;
@@ -171,7 +188,7 @@ class Search extends Component {
     }
 
     handleChange(event) {
-        this.setState({ search: event.target.value });
+        this.setState({search: event.target.value});
     }
 
     handleSubmit(event) {
@@ -212,7 +229,7 @@ class Search extends Component {
     }
 
     handleType(type) {
-        this.setState({ type, selectedItem: null });
+        this.setState({type, selectedItem: null});
     }
 
     render() {
@@ -225,8 +242,9 @@ class Search extends Component {
             artists,
             selectedItem,
             detailLoading,
-            detailTracks } = this.state;
-        const { isSearching, onClick, onAddToQueue } = this.props;
+            detailTracks
+        } = this.state;
+        const {isSearching, onClick, onAddToQueue} = this.props;
         const closedClass = isSearching ? '' : 'closed';
 
         // Set state and styles for search details
@@ -260,19 +278,28 @@ class Search extends Component {
                 searchResults = <SearchResults
                     data={data}
                     clickHandler={(artist) => this.handleArtistClick(artist)}
-                    type={type} />
+                    type={type}/>;
                 break;
             case 'album':
                 searchResults = <SearchResults
                     data={data}
                     clickHandler={(album) => this.handleAlbumClick(album)}
-                    type={type} />
+                    type={type}/>;
                 break;
             default:
                 searchResults = <SearchResults
                     data={data}
-                    clickHandler={(track) => onAddToQueue(track)}
-                    type={type} />
+                    clickHandler={(track) => {
+                        this.setState(state => {
+                            const queuedUris = state.queuedUris;
+                            queuedUris[track.uri] = true;
+                            return {
+                                queuedUris
+                            }
+                        });
+                        onAddToQueue(track);
+                    }}
+                    type={type}/>
         }
 
         return (
@@ -283,8 +310,8 @@ class Search extends Component {
                     handleClear={this.handleClear}
                     search={search}
                     handleType={this.handleType}
-                    type={type} />
-                <div className="search-results" style={{ overflowY: mainSearchScroll }}>
+                    type={type}/>
+                <div className="search-results" style={{overflowY: mainSearchScroll}}>
                     {
                         loading
                             ? <div className="search-loading">Loading...</div>
@@ -294,7 +321,8 @@ class Search extends Component {
                         <button
                             className="detail-close"
                             type="button"
-                            onClick={this.handleDetailClose}>&lt; BACK</button>
+                            onClick={this.handleDetailClose}>&lt; BACK
+                        </button>
                         <div className="search-loading">
                             {
                                 selectedItem === null
@@ -309,7 +337,7 @@ class Search extends Component {
                                     : <SearchResults
                                         data={detailTracks}
                                         clickHandler={(track) => onAddToQueue(track)}
-                                        type='track' />
+                                        type='track'/>
                             }
                         </div>
                     </div>

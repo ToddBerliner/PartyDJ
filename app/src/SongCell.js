@@ -1,35 +1,63 @@
-import React from "react";
+import React, { Component } from 'react';
 
-const SongCell = props => {
+class SongCell extends Component {
 
-    const { artUrl, name, artist, albumName } = props.track;
-    let { onClick } = props;
-    if (!onClick) {
-        onClick = () => { }
+    constructor(props) {
+        super(props);
+        this.state = {
+            checked: props.checked,
+            track: props.track,
+            onClick: props.onClick
+        };
+        this.selectTrack = this.selectTrack.bind(this);
     }
 
-    const backgroundStyles = {
-        backgroundImage: `url(${artUrl})`,
+    selectTrack(track) {
+        this.state.onClick(track);
+        this.setState({
+            checked: true
+        });
     }
 
-    return (
-        <div className={"song-cell-wrap"} onClick={() => {
-            onClick(props.track);
-        }}>
-            <div className="song-art-cell">
-                <div className="song-art-img" style={backgroundStyles} />
-            </div>
-            <div className="song-details-cell">
-                <div className="song-details-wrap">
-                    <div className="song-title">{name}</div>
-                    <div className="song-artist">
-                        {artist} &middot;
-                        <span className="song-album"> {albumName}</span>
+    render() {
+
+        let { checked, track } = this.state;
+        const { artUrl, name, artist, albumName } = track;
+
+        const backgroundStyles = {
+            backgroundImage: `url(${artUrl})`,
+        };
+
+        return (
+            <div className={"song-cell-wrap"} onClick={
+                checked
+                    ? () => {}
+                    : () => {
+                        this.selectTrack(track);
+                    }
+            }>
+                <div className="song-art-cell">
+                    <div className="song-art-img" style={backgroundStyles}>
+                        {checked &&
+                        <>
+                            <div className="song-art-img-checked" />
+                            <span className="material-icons song-art-check">check_circle</span>
+                        </>
+                        }
                     </div>
                 </div>
-            </div>
-        </div >
-    );
+                <div className="song-details-cell">
+                    <div className="song-details-wrap">
+                        <div className="song-title">{name}</div>
+                        <div className="song-artist">
+                            {artist} &middot;
+                            <span className="song-album"> {albumName}</span>
+                        </div>
+                    </div>
+                </div>
+            </div >
+        );
+    }
 }
 
 export default SongCell;

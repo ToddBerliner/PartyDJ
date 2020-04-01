@@ -28,7 +28,7 @@ const state = {
     is_playing: null,
     progress_ms: null,
     currentUserId: null
-}
+};
 const users = {};
 const intervals = {};
 const usersMap = [];
@@ -39,7 +39,7 @@ const spotifyAuth = {
     playlistId: "40A1SdohDLvoG4iitBuqns",
     playlistUri: "spotify:playlist:40A1SdohDLvoG4iitBuqns",
     appToken: null
-}
+};
 
 // Get Spotify app token
 spotify.getAppToken(spotifyAuth, null);
@@ -83,7 +83,7 @@ const handleNewTracks = () => {
         });
     } else {
         // Go ahead and update the playlist
-        console.log(`Already have encouhd: ${trackUris.length}`);
+        // console.log(`Already have encouhd: ${trackUris.length}`);
         handleUpdatedPlaylist(trackUris);
     }
 }
@@ -105,7 +105,7 @@ const handleGetCurrentlyPlaying = response => {
                 ? spotify.extractTrack(response.data.item)
                 : null;
             if (state.track !== null) {
-                console.log(`Now playing: ${state.track.name}`);
+                // console.log(`Now playing: ${state.track.name}`);
                 // Remove the track from the user's playlist to update state
                 // The track is removed by trackUri so it will be removed
                 // from all users who queued the song.
@@ -113,7 +113,7 @@ const handleGetCurrentlyPlaying = response => {
             }
         }
     }
-}
+};
 
 const handleSearchResults = (userId, response, type) => {
     try {
@@ -155,7 +155,7 @@ const handleSearchResults = (userId, response, type) => {
         console.log("Error searching: ");
         console.log(err);
     }
-}
+};
 
 const handleAlbums = (userId, response, event) => {
     if (response.status === 200) {
@@ -170,7 +170,7 @@ const handleAlbums = (userId, response, event) => {
             }
         } catch (err) { console.log(err); }
     }
-}
+};
 
 const handleTracks = (userId, response, event) => {
     /**
@@ -197,7 +197,7 @@ const handleTracks = (userId, response, event) => {
             io.to(`${userId}`).emit(event, tracks);
         } catch (err) { console.log(err); }
     }
-}
+};
 
 // on connection method
 io.on("connection", socket => {
@@ -209,7 +209,7 @@ io.on("connection", socket => {
 
     // Initialize user
     const userId = socket.id;
-    users[userId] = { playlist: [] }
+    users[userId] = { playlist: [] };
     intervals[userId] = null;
     usersMap.push(userId);
     updateUsersNext();

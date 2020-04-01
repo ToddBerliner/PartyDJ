@@ -4,7 +4,6 @@ import SongCell from "./SongCell.js";
 import { emptyTrack } from "./config";
 
 const Player = props => {
-
     const {
         progress_ms,
         songsAhead,
@@ -72,6 +71,7 @@ const Player = props => {
                                 className="section-callout"
                                 onClick={onClickAdd}>Add</button>
                         </div>
+                        <div>
                         {
                             playlist.length > 0
                                 ? playlist.map((track, index) => {
@@ -85,6 +85,7 @@ const Player = props => {
                                 })
                                 : null
                         }
+                        </div>
                         <div className="queue-footer">
                             {activeMemberCount} people online
                         </div>

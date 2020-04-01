@@ -8,7 +8,7 @@ module.exports.extractId = uri => {
 }
 
 module.exports.getRecommendations = (token, trackIds, handler) => {
-    axios.get(`https://api.spotify.com/v1/recommendations?seed_tracks=${trackIds.join(",")}&limit=50`,
+    axios.get(`https://api.spotify.com/v1/recommendations?seed_tracks=${trackIds.slice(0, 5).join(",")}&limit=50`,
         {
             headers: { "Authorization": "Bearer " + token }
         })
@@ -130,7 +130,7 @@ module.exports.extractArtist = artist => {
         name: artist.name,
         artUrl
     }
-}
+};
 
 module.exports.extractTrack = track => {
 
@@ -158,7 +158,7 @@ module.exports.extractTrack = track => {
         artist: artist,
         duration_ms: track.duration_ms
     }
-}
+};
 
 module.exports.updatePlaylist = (token, playlistId, trackUris = []) => {
     console.log(`  --> updating playlist with ${trackUris.length} tracks`);
@@ -169,7 +169,7 @@ module.exports.updatePlaylist = (token, playlistId, trackUris = []) => {
             headers: { "Authorization": "Bearer " + token }
         })
         .catch(err => { console.log(err) });
-}
+};
 
 module.exports.playPlaylist = (token, deviceId, playlistUri) => {
     axios.put(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
@@ -183,7 +183,7 @@ module.exports.playPlaylist = (token, deviceId, playlistUri) => {
             headers: { "Authorization": "Bearer " + token }
         })
         .catch(err => { console.log(err) });
-}
+};
 
 module.exports.playTrack = (token, deviceId, trackUri) => {
     axios.put(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
@@ -194,7 +194,7 @@ module.exports.playTrack = (token, deviceId, trackUri) => {
             headers: { "Authorization": "Bearer " + token }
         })
         .catch(err => { console.log(err) });
-}
+};
 
 module.exports.getCurrentlyPlaying = (token, handler) => {
     axios.get("https://api.spotify.com/v1/me/player",
@@ -206,4 +206,6 @@ module.exports.getCurrentlyPlaying = (token, handler) => {
             handler(response);
         })
         .catch(err => { console.log(err) });
-}
+};
+
+
