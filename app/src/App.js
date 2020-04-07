@@ -6,6 +6,7 @@ import Login from './Login.js';
 import Search from './Search.js';
 import { endpoint } from './config.js';
 
+
 import {
   BrowserRouter as Router,
   Switch,
@@ -93,6 +94,7 @@ class App extends Component {
   componentDidMount() {
 
     // console.log(`endpoint: ${endpoint}`);
+    console.log(process.env);
 
     this.socket = socketIOClient(endpoint);
     this.socket.on("connect", () => {
@@ -102,8 +104,8 @@ class App extends Component {
       });
     });
 
-    this.socket.on("station state",
-      stationState => this.handleStationState(stationState));
+    // this.socket.on("station state",
+    //   stationState => this.handleStationState(stationState));
   }
 
   componentWillUnmount() {
@@ -145,6 +147,9 @@ class App extends Component {
   }
 
   handleLogin(token, deviceId) {
+    /*
+    Here we have the device selected.
+     */
     this.setState({
       token: token,
       deviceId: deviceId,
@@ -169,6 +174,7 @@ class App extends Component {
       isSearching,
       socket
     } = this.state;
+    console.log(redirect);
     if (redirect) {
       return <Redirect to="/login" />
     } else {

@@ -3,6 +3,13 @@
 const axios = require("axios");
 const querystring = require("querystring");
 
+const spotifyConfig = {
+    clientId: "5624ad43c59e452fa3878109bb0f7783",
+    clientSecret: "dad234b4a3fe4d93b62fc2543f45b887"
+}
+
+module.exports.spotifyConfig = spotifyConfig;
+
 module.exports.extractId = uri => {
     return [...uri.split(":")].pop();
 }
@@ -19,7 +26,7 @@ module.exports.getRecommendations = (token, trackIds, handler) => {
 }
 
 module.exports.getAppToken = async function (spotifyAuth, handler = null) {
-    const base64data = new Buffer.from("5624ad43c59e452fa3878109bb0f7783:dad234b4a3fe4d93b62fc2543f45b887").toString('base64');
+    const base64data = new Buffer.from(`${spotifyConfig.clientId}:${spotifyConfig.clientSecret}`).toString('base64');
     const config = {
         headers: {
             'content-type': 'application/x-www-form-urlencoded',
@@ -59,6 +66,54 @@ module.exports.search = (spotifyAuth, userId, query, type, handler) => {
                     this.search(spotifyAuth, userId, query, type, handler);
                 });
             }
+        });
+}
+
+module.exports.getUser = token => {
+    // console.log(`>> Getting user for token: ${token}`);
+    console.log(`returning promise`);
+    return axios.get(`https://api.spotify.com/v1/me`,
+        {
+            headers: { "Authorization": "Bearer " + token }
+        })
+        .then(response => {
+            console.log(`resolving promise`);
+            return Promise.resolve(response.data.id);
+        })
+        .catch(err => {
+            console.log(`resolving promise err`);
+            return Promise.resolve(false)
+        });
+}
+
+/**
+ * Swaps the code for user tokens.
+ *
+ * @param code
+ * @returns {Promise<AxiosResponse<T>>}
+ */
+module.exports.tokenSwap = (code) => {
+    const config = {};
+    const data = querystring.stringify({
+        grant_type: 'authorization_code',
+        code: code,
+        redirect_uri: 'http://10.0.0.80:4000/spotify',
+        client_id: spotifyConfig.clientId,
+        client_secret: spotifyConfig.clientSecret
+    });
+    console.log(`returning promise`);
+    return axios.post('https://accounts.spotify.com/api/token',
+        data, config)
+        .then(spotRes => {
+            console.log(`resolving promise`);
+            // console.log(`>> Swapped code for token`);
+            return Promise.resolve({
+                accessToken: spotRes.data.access_token,
+                refreshToken: spotRes.data.refresh_token
+            });
+        }).catch(err => {
+            console.log(`resolving promise err`);
+            return Promise.resolve(false);
         });
 }
 

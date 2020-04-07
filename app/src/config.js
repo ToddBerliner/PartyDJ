@@ -3,6 +3,7 @@ export const authEndpoint = "https://accounts.spotify.com/authorize";
 export const clientId = "5624ad43c59e452fa3878109bb0f7783";
 export const endpoint = process.env.REACT_APP_ENDPOINT;
 export const redirectUri = process.env.REACT_APP_REDIRECT_URI;
+export const serverRedirectUri = process.env.REACT_APP_REDIRECT_URI;
 export const scopes = [
     "user-top-read",
     "user-library-read",
@@ -32,3 +33,7 @@ export const track = {
     artist: "AstroPilot",
     duration_ms: 567000
 }
+
+export const responseType = "code";
+
+export const showDialog = "false";

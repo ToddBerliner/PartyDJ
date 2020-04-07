@@ -302,6 +302,7 @@ io.on("connection", socket => {
         if (users.length === 0) {
             clearInterval(spotifyHeartbeat);
             state.track = null;
+            console.log(`Cleared Spotify Heartbeat`);
         }
     });
 });

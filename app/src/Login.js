@@ -4,8 +4,10 @@ import './App.css';
 import {
     authEndpoint,
     clientId,
-    redirectUri,
-    scopes
+    serverRedirectUri,
+    scopes,
+    responseType,
+    showDialog
 } from './config.js';
 
 const hash = window.location.hash
@@ -83,7 +85,7 @@ const LoginBtn = () => {
         <div className="App Login">
             <a
                 className="btn btn--loginApp-link"
-                href={`${authEndpoint}?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scopes.join("%20")}&response_type=token&show_dialog=true`}
+                href={`${authEndpoint}?client_id=${clientId}&redirect_uri=${serverRedirectUri}&scope=${scopes.join("%20")}&response_type=${responseType}&show_dialog=${showDialog}`}
             >
                 Login to Spotify
              </a>
