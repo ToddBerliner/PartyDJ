@@ -18,7 +18,7 @@ router.get("/spotify", (req, res) => {
         user.getUserId(code)
             .then(userId => {
                 if (userId) {
-                    res.redirect('http://10.0.0.80:3000');
+                    res.redirect(`http://10.0.0.80:3000/radio/${userId}`);
                 } else {
                     res.redirect('http://10.0.0.80:3000/login');
                 }

@@ -47,9 +47,7 @@ module.exports = {
                 accessToken,
                 refreshToken
             ], (err, results) => {
-                console.log(`---- end query 1`);
                 if (err) {
-                    console.log(`---- error query 1`);
                     resolve(false);
                 }
             });
@@ -59,6 +57,7 @@ module.exports = {
             connection.query(selectQuery, [
                 spotifyUserId
             ], (err, results) => {
+                connection.end();
                 if (err) {
                     console.log(`---- error query 2`);
                     resolve(false);

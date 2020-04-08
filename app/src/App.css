@@ -333,6 +333,21 @@
   position: relative;
   overflow: hidden;
 }
+.mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: black;
+  opacity: .75;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  justify-content: center;
+  color: #67e5ff;
+}
 .song-art-img-checked {
   position: absolute;
   top: 0;

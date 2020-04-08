@@ -4,6 +4,7 @@ import './App.css';
 import Player from './Player.js';
 import Login from './Login.js';
 import Search from './Search.js';
+import Mask from './Mask.js';
 import { endpoint } from './config.js';
 
 
@@ -20,7 +21,8 @@ class App extends Component {
     super();
     this.socket = null;
     this.state = {
-      userId: null,
+      userId: localStorage.getItem('userId'),
+      socketId: null,
       isMaster: false,
       activeMemberCount: 0,
       token: null,
@@ -38,6 +40,7 @@ class App extends Component {
     this.handleClickAdd = this.handleClickAdd.bind(this);
     this.handleAddToQueue = this.handleAddToQueue.bind(this);
     this.closeSearch = this.closeSearch.bind(this);
+    this.handleToken = this.handleToken.bind(this);
 
     this.tracks = [
       {
@@ -92,28 +95,42 @@ class App extends Component {
   }
 
   componentDidMount() {
-
     // console.log(`endpoint: ${endpoint}`);
-    console.log(process.env);
 
     this.socket = socketIOClient(endpoint);
     this.socket.on("connect", () => {
       this.setState({
         socket: this.socket,
-        userId: this.socket.id
+        socketId: this.socket.id
       });
     });
 
+    if (this.state.userId === null) {
+      let userId = localStorage.getItem('userId');
+      if (userId !== null) {
+        this.setState({userId: localStorage.getItem('userId')});
+      }
+    } else {
+      this.socket.emit("register", {userId: this.state.userId});
+    }
+
     // this.socket.on("station state",
     //   stationState => this.handleStationState(stationState));
+
+    this.socket.on("token refresh",
+        token => this.handleToken(token));
   }
 
   componentWillUnmount() {
     // Un-socket the socket!
   }
 
+  handleToken(token) {
+    console.log(token);
+  }
+
   handleStationState(stationState) {
-    console.log(`got station state:`);
+    // console.log(`got station state:`);
     // console.log(stationState);
     const { is_playing, progress_ms, track, playlist, activeMemberCount } = stationState;
     this.setState({
@@ -164,7 +181,7 @@ class App extends Component {
 
   render() {
     const {
-      redirect,
+      userId,
       token,
       deviceId,
       track,
@@ -174,40 +191,40 @@ class App extends Component {
       isSearching,
       socket
     } = this.state;
-    if (redirect) {
-      return <Redirect to="/login" />
-    } else {
-      return (
+    return (
         <Router>
           <Switch>
-            <Route path="/login">
-              {token && deviceId
-                ? <Redirect to="/" />
-                : <Login handleLogin={this.handleLogin} />}
-            </Route>
+            <Route path="/login" component={Login} />
+            <Route path="/radio/:userId"
+                   render={props => {
+                     let {userId} = props.match.params;
+                     localStorage.setItem('userId', userId);
+                     return(<Redirect to="/" />);
+                   }}/>
             <Route path="/">
-              <Player
-                track={track}
-                progress_ms={progress_ms}
-                playlist={playlist}
-                onClickAdd={this.handleClickAdd}
-                activeMemberCount={activeMemberCount}
-              />
               {
-                socket === null
-                  ? null
-                  : <Search
-                    socket={socket}
-                    isSearching={isSearching}
-                    onClick={this.closeSearch}
-                    playlist={playlist}
-                    onAddToQueue={this.handleAddToQueue} />
+                userId === null && <Redirect to="/login" />
               }
+              <Player
+                  track={track}
+                  progress_ms={progress_ms}
+                  playlist={playlist}
+                  onClickAdd={this.handleClickAdd}
+                  activeMemberCount={activeMemberCount}
+              />
+              {this.state.socket !== null &&
+              <Search
+                  socket={socket}
+                  isSearching={isSearching}
+                  onClick={this.closeSearch}
+                  playlist={playlist}
+                  onAddToQueue={this.handleAddToQueue} />
+              }
+              {token === null && <Mask />}
             </Route>
           </Switch>
         </Router>
-      );
-    }
+    );
   }
 }
 

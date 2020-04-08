@@ -101,12 +101,9 @@ module.exports.tokenSwap = (code) => {
         client_id: spotifyConfig.clientId,
         client_secret: spotifyConfig.clientSecret
     });
-    console.log(`returning promise`);
     return axios.post('https://accounts.spotify.com/api/token',
         data, config)
         .then(spotRes => {
-            console.log(`resolving promise`);
-            // console.log(`>> Swapped code for token`);
             return Promise.resolve({
                 accessToken: spotRes.data.access_token,
                 refreshToken: spotRes.data.refresh_token

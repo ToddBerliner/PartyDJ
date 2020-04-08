@@ -31,6 +31,7 @@ class Login extends Component {
         }
         this.selectDevice = this.selectDevice.bind(this);
         this.getDevices = this.getDevices.bind(this);
+        window.location = `${authEndpoint}?client_id=${clientId}&redirect_uri=${serverRedirectUri}&scope=${scopes.join("%20")}&response_type=${responseType}&show_dialog=${showDialog}`;
     }
 
     selectDevice(deviceId) {
@@ -87,6 +88,7 @@ const LoginBtn = () => {
                 className="btn btn--loginApp-link"
                 href={`${authEndpoint}?client_id=${clientId}&redirect_uri=${serverRedirectUri}&scope=${scopes.join("%20")}&response_type=${responseType}&show_dialog=${showDialog}`}
             >
+
                 Login to Spotify
              </a>
         </div>

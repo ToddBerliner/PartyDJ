@@ -220,8 +220,17 @@ io.on("connection", socket => {
         io.to(`${userId}`).emit("station state", station.getStationState(users[userId], state));
     }, 1000);
 
+    socket.on("register", data => {
+        console.log("Let's get that token!");
+        io.to(`${userId}`).emit("token refresh", "123");
+    });
+
     // Handle login
     socket.on("spotify login", data => {
+
+        console.log("Old event - spotify login");
+        return false;
+
         // set state so heartbeat picks up signal to poll spotify
         spotifyAuth.token = data.token;
         spotifyAuth.deviceId = data.deviceId;
