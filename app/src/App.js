@@ -174,7 +174,6 @@ class App extends Component {
       isSearching,
       socket
     } = this.state;
-    console.log(redirect);
     if (redirect) {
       return <Redirect to="/login" />
     } else {
