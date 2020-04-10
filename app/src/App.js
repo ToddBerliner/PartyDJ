@@ -5,6 +5,7 @@ import Player from './Player.js';
 import Login from './Login.js';
 import Search from './Search.js';
 import Mask from './Mask.js';
+import SpotPlayer from './SpotPlayer.js';
 import { endpoint } from './config.js';
 
 
@@ -110,15 +111,10 @@ class App extends Component {
       if (userId !== null) {
         this.setState({userId: localStorage.getItem('userId')});
       }
-    } else {
-      this.socket.emit("register", {userId: this.state.userId});
     }
 
     // this.socket.on("station state",
     //   stationState => this.handleStationState(stationState));
-
-    this.socket.on("token refresh",
-        token => this.handleToken(token));
   }
 
   componentWillUnmount() {
@@ -126,7 +122,7 @@ class App extends Component {
   }
 
   handleToken(token) {
-    console.log(token);
+    console.log(`Got token`);
   }
 
   handleStationState(stationState) {
@@ -212,7 +208,7 @@ class App extends Component {
                   onClickAdd={this.handleClickAdd}
                   activeMemberCount={activeMemberCount}
               />
-              {this.state.socket !== null &&
+              {this.socket !== null &&
               <Search
                   socket={socket}
                   isSearching={isSearching}

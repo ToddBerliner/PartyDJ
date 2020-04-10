@@ -6,6 +6,7 @@ const http = require("http");
 const socketIo = require("socket.io");
 const spotify = require("./spotify.js");
 const station = require("./station.js");
+const user = require("./user.js");
 
 const playlistData = require("./src/playlistData.js");
 
@@ -221,8 +222,12 @@ io.on("connection", socket => {
     }, 1000);
 
     socket.on("register", data => {
-        console.log("Let's get that token!");
-        io.to(`${userId}`).emit("token refresh", "123");
+        user.getRefreshTokenByUserId(data.userId)
+            .then(refreshToken => {
+                console.log(`Got refresh token: ${refreshToken}`);
+                // TODO: get token with refresh token
+                io.to(`${userId}`).emit("token refresh", refreshToken);
+            });
     });
 
     // Handle login

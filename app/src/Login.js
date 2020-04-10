@@ -31,7 +31,6 @@ class Login extends Component {
         }
         this.selectDevice = this.selectDevice.bind(this);
         this.getDevices = this.getDevices.bind(this);
-        window.location = `${authEndpoint}?client_id=${clientId}&redirect_uri=${serverRedirectUri}&scope=${scopes.join("%20")}&response_type=${responseType}&show_dialog=${showDialog}`;
     }
 
     selectDevice(deviceId) {
@@ -39,6 +38,7 @@ class Login extends Component {
     }
 
     getDevices() {
+        console.log(this.state.token);
         $.ajax({
             url: "https://api.spotify.com/v1/me/player/devices",
             type: "GET",
@@ -54,7 +54,7 @@ class Login extends Component {
             },
             context: this,
             error: function (xhr, status, error) {
-                alert(error);
+                console.log(status);
             }
         });
     }
@@ -68,6 +68,8 @@ class Login extends Component {
             }, () => {
                 this.getDevices();
             });
+        } else {
+            window.location = `${authEndpoint}?client_id=${clientId}&redirect_uri=${serverRedirectUri}&scope=${scopes.join("%20")}&response_type=${responseType}&show_dialog=${showDialog}`;
         }
     }
 

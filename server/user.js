@@ -1,7 +1,8 @@
 'use strict';
 const mysql = require('mysql');
 const spotify = require("./spotify.js");
-const connection = mysql.createConnection({
+const pool = mysql.createPool({
+    connectionLimit: 10,
     host: 'localhost',
     user: 'root',
     password: 'all0nall0n',
@@ -9,16 +10,19 @@ const connection = mysql.createConnection({
 });
 
 module.exports = {
+    getRefreshTokenByUserId: function(userId) {
+        return new Promise(resolve => {
+            pool.query("SELECT refresh_token FROM users where id = ?", [userId], (err, results) => {
+                if (err) resolve(false);
+                resolve(results[0].refresh_token);
+            })
+        });
+    },
     getUserId: async function (code) {
-        console.log(`-- start tokenSwap --`);
         let tokens = await spotify.tokenSwap(code);
-        console.log(`-- end tokenSwap --`);
         if (tokens) {
-            console.log(`-- start getUser`);
             let spotifyUserId = await spotify.getUser(tokens.accessToken);
-            console.log(`-- end getUser: ${spotifyUserId} --`);
             if (spotifyUserId) {
-                console.log(`-- start createOrUpdate --`);
                 let userId = await this.createOrUpdate({
                     ...tokens,
                     spotifyUserId
@@ -28,19 +32,17 @@ module.exports = {
                 }
             }
         }
-        console.log(`>> FU <<`);
         return false;
     },
     createOrUpdate: function (spotData) {
         return new Promise(resolve => {
-            connection.connect();
             let {spotifyUserId, accessToken, refreshToken} = spotData;
             let query = `
                 INSERT INTO users (spotify_id, token, refresh_token)
                 VALUES (?, ?, ?)
                 ON DUPLICATE KEY UPDATE token = ?, refresh_token = ?;
             `;
-            connection.query(query, [
+            pool.query(query, [
                 spotifyUserId,
                 accessToken,
                 refreshToken,
@@ -52,18 +54,17 @@ module.exports = {
                 }
             });
             let selectQuery = `
-                SELECT id FROM users WHERE spotify_id = ?
+                SELECT * FROM users WHERE spotify_id = ?
             `;
-            connection.query(selectQuery, [
+            pool.query(selectQuery, [
                 spotifyUserId
             ], (err, results) => {
-                connection.end();
                 if (err) {
                     console.log(`---- error query 2`);
                     resolve(false);
                 } else {
                     console.log(`---- results query 2`);
-                    resolve(results[0].id);
+                    resolve(results[0]);
                 }
             });
         })
